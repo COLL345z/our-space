@@ -1,11 +1,12 @@
 package com.example.demo.controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.entity.GalleryItem;
 import com.example.demo.repository.GalleryRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.*;
 
 @RestController
@@ -14,25 +15,28 @@ import java.util.*;
 public class GalleryController {
 
     private final GalleryRepository repo;
+    private final Cloudinary cloudinary;
 
-    public GalleryController(GalleryRepository repo) { this.repo = repo; }
+    public GalleryController(GalleryRepository repo, Cloudinary cloudinary) {
+        this.repo = repo;
+        this.cloudinary = cloudinary;
+    }
 
     @GetMapping
-    public List<GalleryItem> getAll() { return repo.findAll(); }
+    public List<GalleryItem> getAll() {
+        return repo.findAll();
+    }
 
-    // Filter by type (IMAGE/VIDEO)
     @GetMapping("/type/{type}")
     public List<GalleryItem> getByType(@PathVariable String type) {
         return repo.findByType(type.toUpperCase());
     }
 
-    // Favorites
     @GetMapping("/favorites")
     public List<GalleryItem> getFavorites() {
         return repo.findByFavoriteTrue();
     }
 
-    // Toggle favorite
     @PutMapping("/{id}/favorite")
     public GalleryItem toggleFavorite(@PathVariable Long id) {
         GalleryItem item = repo.findById(id).orElseThrow();
@@ -40,7 +44,7 @@ public class GalleryController {
         return repo.save(item);
     }
 
-    // Multi‑file upload
+    // ✅ CLOUDINARY UPLOAD
     @PostMapping(consumes = "multipart/form-data")
     public List<GalleryItem> uploadMultiple(
             @RequestParam("title") String title,
@@ -49,19 +53,21 @@ public class GalleryController {
 
         List<GalleryItem> saved = new ArrayList<>();
 
-        String folder = System.getProperty("user.dir") + "/uploads/";
-        new File(folder).mkdirs();
-
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
-            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File dest = new File(folder, filename);
-            file.transferTo(dest);
+
+            Map uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.emptyMap()
+            );
+
+            String url = uploadResult.get("secure_url").toString();
 
             GalleryItem item = new GalleryItem();
             item.setTitle(title);
             item.setType(type);
-            item.setFileUrl("/uploads/" + filename);
+            item.setFileUrl(url);
+
             saved.add(repo.save(item));
         }
 
@@ -69,5 +75,7 @@ public class GalleryController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) { repo.deleteById(id); }
+    public void delete(@PathVariable Long id) {
+        repo.deleteById(id);
+    }
 }
