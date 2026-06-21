@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Memories · Our Space</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #070709;
+            --bg-primary: #0c0c11;
+            --bg-secondary: #111118;
+            --bg-tertiary: #16161f;
+            --bg-card: #181820;
+            --bg-hover: #1e1e2a;
+            --bg-input: #1a1a24;
+            --rehema: #5db8d4;
+            --rehema-soft: rgba(93,184,212,0.1);
+            --collins: #3cb878;
+            --collins-soft: rgba(60,184,120,0.1);
+            --mustard: #e0a83b;
+            --mustard-glow: rgba(224,168,59,0.35);
+            --mustard-soft: rgba(224,168,59,0.08);
+            --mustard-gradient: linear-gradient(135deg, #e0a83b 0%, #c48f28 60%, #a8781e 100%);
+            --text-primary: #eeeef2;
+            --text-secondary: #b0b0bb;
+            --text-muted: #787882;
+            --border-subtle: #22222d;
+            --border-card: #1e1e2a;
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 8px;
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+            --shadow-md: 0 10px 28px rgba(0,0,0,0.5);
+            --shadow-sm: 0 4px 14px rgba(0,0,0,0.4);
+            --transition-fast: 0.15s ease;
+            --transition-smooth: 0.25s cubic-bezier(0.4,0,0.2,1);
+            --transition-bounce: 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#2a2a38; border-radius:10px; }
+
+        /* Matrix background */
+        .jp-matrix {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            z-index:0; overflow:hidden;
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+            grid-auto-rows: 32px;
+            justify-content: center; align-content: center;
+            font-size: 18px;
+            color: rgba(0,150,255,0.4);
+            font-family: "Courier New", Courier, monospace;
+            opacity: 0.12;
+            pointer-events: none;
+            user-select: none;
+        }
+        .jp-matrix > span {
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0,150,255,0.5);
+            line-height:1; display:block;
+        }
+        .jp-matrix > span:nth-child(19n+2) { animation: smooth-pulse 3.5s ease-in-out infinite 0.2s; }
+        .jp-matrix > span:nth-child(29n+1) { animation: smooth-pulse 4.1s ease-in-out infinite 0.7s; }
+        .jp-matrix > span:nth-child(11n) { color: rgba(100,200,255,0.7); animation: smooth-pulse 2.9s ease-in-out infinite 1.1s; }
+        .jp-matrix > span:nth-child(37n+10) { animation: smooth-pulse 5.3s ease-in-out infinite 1.5s; }
+        .jp-matrix > span:nth-child(41n+1) { animation: smooth-pulse 3.9s ease-in-out infinite 0.4s; }
+        .jp-matrix > span:nth-child(17n+9) { animation: smooth-pulse 2.8s ease-in-out infinite 0.9s; }
+        .jp-matrix > span:nth-child(23n+18) { animation: smooth-pulse 4.3s ease-in-out infinite 1.3s; }
+        .jp-matrix > span:nth-child(31n+4) { animation: smooth-pulse 5.6s ease-in-out infinite 0.1s; }
+        .jp-matrix > span:nth-child(43n+20) { animation: smooth-pulse 3.6s ease-in-out infinite 1.8s; }
+        .jp-matrix > span:nth-child(13n+6) { animation: smooth-pulse 3.2s ease-in-out infinite 1.2s; }
+        .jp-matrix > span:nth-child(53n+5) { animation: smooth-pulse 4.9s ease-in-out infinite 0.5s; }
+        .jp-matrix > span:nth-child(47n+15) { animation: smooth-pulse 5.9s ease-in-out infinite 1s; }
+
+        @keyframes smooth-pulse {
+            0%,100% { color: rgba(0,150,255,0.4); text-shadow: 0 0 5px rgba(0,150,255,0.5); }
+            30% { color: rgba(100,200,255,1); text-shadow: 0 0 10px rgba(100,200,255,1), 0 0 15px rgba(100,200,255,1); }
+            50% { color: rgba(255,105,180,1); text-shadow: 0 0 10px rgba(255,105,180,1), 0 0 15px rgba(255,105,180,1); }
+            70% { color: #ffffff; text-shadow: 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #fff; }
+        }
+
+        .header {
+            background: var(--bg-secondary); border-bottom: 1px solid var(--border-subtle);
+            padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+            position: sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+        }
+        .header-icon {
+            width:34px; height:34px; border-radius:50%;
+            background: linear-gradient(135deg, var(--rehema), var(--collins), var(--mustard));
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.9rem; color:#000;
+            box-shadow:0 4px 16px rgba(93,184,212,0.25);
+        }
+        .header h1 { font-size:1.1rem; font-weight:700; }
+
+        .container { position: relative; z-index:1; max-width: 960px; margin:0 auto; padding: 20px 16px 40px; }
+
+        .add-bar { display:flex; justify-content:center; margin-bottom:20px; }
+        .btn-add {
+            background: var(--mustard-gradient); border:none; color:#1a1000; font-weight:700;
+            padding:12px 26px; border-radius:40px; cursor:pointer;
+            font-size:0.9rem; display:flex; align-items:center; gap:8px;
+            box-shadow:0 6px 18px var(--mustard-glow);
+            transition:all var(--transition-smooth);
+            font-family:var(--font);
+        }
+        .btn-add:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(224,168,59,0.5); filter:brightness(1.08); }
+
+        .form-panel {
+            background: var(--bg-card); border:1px solid var(--border-card);
+            border-radius:var(--radius-xl); padding:22px 20px; margin-bottom:22px;
+            display:none; box-shadow:var(--shadow-md);
+        }
+        .form-panel.visible { display:block; }
+        .form-panel h3 {
+            font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;
+            color:var(--text-muted); margin-bottom:16px;
+        }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+        .form-group label {
+            font-size:0.7rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:0.04em;
+        }
+        input, select, textarea {
+            font-family:var(--font); font-size:0.85rem;
+            padding:10px 14px;
+            border:1.5px solid var(--border-card);
+            border-radius:var(--radius-sm);
+            background:var(--bg-input);
+            color:var(--text-primary);
+            outline:none; width:100%;
+            transition:all var(--transition-fast);
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color:var(--mustard);
+            box-shadow:0 0 0 3px rgba(224,168,59,0.07);
+        }
+        textarea { resize:vertical; min-height:80px; grid-column:span 2; }
+        select { color-scheme:dark; cursor:pointer; }
+
+        .file-input-wrapper {
+            position: relative; display: flex; align-items: center;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute; opacity:0; width:100%; height:100%; cursor:pointer; z-index:2;
+        }
+        .file-label {
+            display:flex; align-items:center; gap:8px;
+            padding:10px 16px;
+            background:var(--bg-input);
+            border:1.5px dashed var(--border-card);
+            border-radius:var(--radius-sm);
+            color:var(--text-secondary);
+            font-size:0.85rem;
+            cursor:pointer;
+            width:100%;
+            transition:all var(--transition-fast);
+        }
+        .file-label:hover { border-color:var(--mustard); color:var(--mustard); background:var(--mustard-soft); }
+        .file-label i { font-size:1rem; }
+        .file-count {
+            font-size:0.75rem; color:var(--text-muted); margin-top:4px;
+        }
+
+        .form-actions {
+            display:flex; gap:10px; justify-content:flex-end; margin-top:6px;
+        }
+        .btn-cancel {
+            background:none; border:1px solid var(--border-subtle);
+            color:var(--text-secondary); padding:10px 20px; border-radius:var(--radius-sm);
+            cursor:pointer; font-family:var(--font); font-weight:500;
+        }
+        .btn-save {
+            background:var(--mustard-gradient);
+            border:none; color:#1a1000; font-weight:700;
+            padding:10px 24px; border-radius:var(--radius-sm);
+            cursor:pointer; font-family:var(--font);
+            box-shadow:0 4px 12px var(--mustard-glow);
+        }
+
+        .tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; }
+        .tab-btn {
+            background:var(--bg-card); border:1px solid var(--border-card);
+            color:var(--text-secondary); padding:8px 18px; border-radius:30px;
+            cursor:pointer; font-size:0.8rem; font-weight:500;
+            transition:all var(--transition-fast);
+        }
+        .tab-btn:hover { background:var(--bg-hover); }
+        .tab-btn.active { background:var(--mustard-soft); border-color:var(--mustard); color:var(--mustard); font-weight:600; }
+
+        .grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap:18px;
+        }
+        .card {
+            background:var(--bg-card);
+            border:1px solid var(--border-card);
+            border-radius:var(--radius-lg);
+            overflow:hidden;
+            transition:all var(--transition-smooth);
+            box-shadow:var(--shadow-sm);
+            cursor:pointer;
+            position: relative;
+        }
+        .card:hover { transform:translateY(-3px); border-color:#2e2e3c; box-shadow:var(--shadow-md); }
+        .card-img-container {
+            position: relative;
+            width:100%;
+            height:200px;
+            background:var(--bg-tertiary);
+        }
+        .card-img-container img {
+            width:100%; height:100%; object-fit:cover;
+            display:block;
+        }
+        .card-img-count {
+            position: absolute;
+            bottom:8px; right:8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding:3px 8px;
+            border-radius:20px;
+            font-size:0.7rem;
+            font-weight:600;
+            display: flex;
+            align-items: center;
+            gap:4px;
+        }
+        .card-body {
+            padding:16px; display:flex; flex-direction:column; gap:8px;
+        }
+        .card-title { font-weight:700; font-size:1rem; }
+        .card-category {
+            display:inline-block; font-size:0.7rem; font-weight:600;
+            padding:3px 10px; border-radius:20px;
+            text-transform:uppercase; letter-spacing:0.04em; width:fit-content;
+        }
+        .cat-PHOTO { background:var(--rehema-soft); color:var(--rehema); }
+        .cat-GIFT { background:var(--mustard-soft); color:var(--mustard); }
+        .cat-LETTER { background:rgba(255,105,180,0.1); color:#ff8db8; }
+        .cat-FUNNY { background:var(--collins-soft); color:var(--collins); }
+        .card-desc { font-size:0.85rem; color:var(--text-secondary); line-height:1.5; }
+        .card-meta {
+            display:flex; justify-content:space-between; align-items:center;
+            font-size:0.72rem; color:var(--text-muted); margin-top:auto;
+        }
+        .btn-delete {
+            background:none; border:1px solid rgba(255,80,80,0.3);
+            color:#ff5e5e; padding:6px 14px; border-radius:20px;
+            cursor:pointer; font-size:0.75rem; font-weight:600;
+            transition:all var(--transition-fast);
+            display:flex; align-items:center; gap:5px;
+        }
+        .btn-delete:hover { background:rgba(255,80,80,0.1); border-color:#ff5e5e; }
+
+        /* Modal */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.8);
+            backdrop-filter:blur(8px);
+            z-index:100; display:none; align-items:center; justify-content:center;
+            padding:20px;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-content {
+            background:var(--bg-card); border:1px solid var(--border-card);
+            border-radius:var(--radius-xl);
+            width:100%; max-width:500px; max-height:90vh;
+            overflow-y:auto;
+            box-shadow:var(--shadow-lg);
+            animation: modalIn 0.25s ease;
+            position: relative;
+        }
+        @keyframes modalIn { from{opacity:0; transform:scale(0.95);} to{opacity:1; transform:scale(1);} }
+        .modal-close {
+            position:absolute; top:16px; right:16px;
+            background:rgba(0,0,0,0.5); border:none;
+            color:white; width:36px; height:36px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:1.2rem; z-index:10;
+        }
+        .modal-gallery {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            max-height: 400px;
+        }
+        .modal-gallery img {
+            width: 100%;
+            flex-shrink: 0;
+            scroll-snap-align: center;
+            object-fit: contain;
+            max-height: 400px;
+        }
+        .modal-body {
+            padding:20px;
+        }
+        .modal-category { margin-bottom:12px; }
+        .modal-title {
+            font-weight:700; font-size:1.2rem; margin-bottom:8px;
+        }
+        .modal-desc {
+            color:var(--text-secondary); line-height:1.6; margin-bottom:16px;
+        }
+        .modal-footer {
+            font-size:0.8rem; color:var(--text-muted);
+            border-top:1px solid var(--border-card); padding-top:12px;
+            display:flex; justify-content:space-between;
+        }
+
+        .empty-state {
+            grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);
+        }
+        .empty-state i { font-size:2.5rem; margin-bottom:12px; opacity:0.7; }
+        .empty-state h3 { font-size:1.1rem; color:var(--text-primary); margin-bottom:6px; }
+
+        @media (max-width:600px) {
+            .form-row { grid-template-columns:1fr; }
+            textarea { grid-column:span 1; }
+            .grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="jp-matrix" id="matrixContainer"></div>
+
+<div class="header">
+    <div class="header-icon"><i class="fa-solid fa-sparkles"></i></div>
+    <h1>Our Memories</h1>
+</div>
+
+<div class="container">
+
+    <div class="add-bar">
+        <button class="btn-add" id="btnToggleForm"><i class="fa-solid fa-plus"></i> New memory</button>
+    </div>
+
+    <!-- Form panel -->
+    <div class="form-panel" id="formPanel">
+        <h3>✨ Save a moment</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="titleInput" placeholder="A name for this memory…">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="categoryInput">
+                    <option value="PHOTO">📷 Photo</option>
+                    <option value="GIFT">🎁 Gift</option>
+                    <option value="LETTER">💌 Letter</option>
+                    <option value="FUNNY">😂 Funny</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Images</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFiles" accept="image/*" multiple>
+                    <span class="file-label" id="fileLabel">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Choose photos
+                    </span>
+                </div>
+                <div class="file-count" id="fileCount"></div>
+            </div>
+            <div class="form-group">
+                <label>Your name</label>
+                <input type="text" id="uploadedByInput" placeholder="Rehema or Collins">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Description</label>
+                <textarea id="descInput" placeholder="What made this moment special?"></textarea>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn-cancel" id="btnCancelForm">Cancel</button>
+            <button class="btn-save" id="btnSave">Save memory</button>
+        </div>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="all">All</button>
+        <button class="tab-btn" data-category="PHOTO">📷 Photos</button>
+        <button class="tab-btn" data-category="GIFT">🎁 Gifts</button>
+        <button class="tab-btn" data-category="LETTER">💌 Letters</button>
+        <button class="tab-btn" data-category="FUNNY">😂 Funny</button>
+    </div>
+
+    <!-- Memories grid -->
+    <div class="grid" id="memoriesGrid"></div>
+
+</div>
+
+<!-- Memory detail modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-gallery" id="modalGallery"></div>
+        <div class="modal-body">
+            <div class="modal-category" id="modalCategory"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <p class="modal-desc" id="modalDesc"></p>
+            <div class="modal-footer">
+                <span id="modalAuthor"></span>
+                <span id="modalDate"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8080/api/memories";
+
+    const formPanel = document.getElementById("formPanel");
+    const btnToggle = document.getElementById("btnToggleForm");
+    const btnCancel = document.getElementById("btnCancelForm");
+    const btnSave = document.getElementById("btnSave");
+    const grid = document.getElementById("memoriesGrid");
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalGallery = document.getElementById("modalGallery");
+    const modalCategory = document.getElementById("modalCategory");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDesc = document.getElementById("modalDesc");
+    const modalAuthor = document.getElementById("modalAuthor");
+    const modalDate = document.getElementById("modalDate");
+
+    let allMemories = [];
+    let currentCategory = "all";
+
+    // File input change handler
+    document.getElementById("imageFiles").addEventListener("change", (e) => {
+        const files = e.target.files;
+        const label = document.getElementById("fileLabel");
+        const count = document.getElementById("fileCount");
+        if (files.length > 0) {
+            label.innerHTML = `<i class="fa-solid fa-check"></i> ${files.length} file${files.length > 1 ? 's' : ''} selected`;
+            count.textContent = `${files.length} image${files.length > 1 ? 's' : ''} ready to upload`;
+        } else {
+            label.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos`;
+            count.textContent = '';
+        }
+    });
+
+    // Toggle form
+    btnToggle.addEventListener("click", () => {
+        formPanel.classList.add("visible");
+        btnToggle.style.display = "none";
+    });
+    btnCancel.addEventListener("click", closeForm);
+    function closeForm() {
+        formPanel.classList.remove("visible");
+        btnToggle.style.display = "flex";
+        clearForm();
+    }
+    function clearForm() {
+        document.getElementById("titleInput").value = "";
+        document.getElementById("categoryInput").value = "PHOTO";
+        document.getElementById("imageFiles").value = "";
+        document.getElementById("uploadedByInput").value = "";
+        document.getElementById("descInput").value = "";
+        document.getElementById("fileLabel").innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos`;
+        document.getElementById("fileCount").textContent = "";
+    }
+
+    async function loadMemories() {
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error("Failed");
+            allMemories = await res.json();
+            applyFilter();
+        } catch (e) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <h3>No memories yet</h3>
+                    <p>Save your first beautiful moment together.</p>
+                </div>`;
+        }
+    }
+
+    function applyFilter() {
+        const filtered = currentCategory === "all"
+            ? allMemories
+            : allMemories.filter(m => m.category === currentCategory);
+        renderMemories(filtered);
+    }
+
+    function renderMemories(memories) {
+        if (!memories.length) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <h3>No memories found</h3>
+                    <p>Try another category or add a new one.</p>
+                </div>`;
+            return;
+        }
+        grid.innerHTML = memories.reverse().map(m => {
+            // Use first image as thumbnail, or a placeholder
+            const imageUrls = m.imageUrls || (m.imageUrl ? [m.imageUrl] : []);
+            const firstImage = imageUrls.length > 0 ? imageUrls[0] : '';
+            const imageCount = imageUrls.length;
+            const dateStr = m.dateCreated
+                ? new Date(m.dateCreated).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" })
+                : "";
+
+            return `
+                <div class="card" onclick="openModal('${m.id}')">
+                    <div class="card-img-container">
+                        <img src="${escapeHTML(firstImage)}" alt="${escapeHTML(m.title || '')}" onerror="this.style.display='none'">
+                        ${imageCount > 1 ? `<div class="card-img-count"><i class="fa-solid fa-images"></i> ${imageCount}</div>` : ''}
+                    </div>
+                    <div class="card-body">
+                        <span class="card-category cat-${m.category || 'PHOTO'}">${escapeHTML(m.category || 'PHOTO')}</span>
+                        <div class="card-title">${escapeHTML(m.title || 'Untitled')}</div>
+                        <div class="card-desc">${escapeHTML(m.description || '')}</div>
+                        <div class="card-meta">
+                            <span>By ${escapeHTML(m.uploadedBy || 'someone')} · ${dateStr}</span>
+                            <button class="btn-delete" onclick="event.stopPropagation(); deleteMemory(${m.id})">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    // Open modal with all images
+    window.openModal = function(id) {
+        const memory = allMemories.find(m => m.id == id);
+        if (!memory) return;
+
+        const imageUrls = memory.imageUrls || (memory.imageUrl ? [memory.imageUrl] : []);
+        modalGallery.innerHTML = imageUrls.map(url => `<img src="${escapeHTML(url)}" alt="">`).join('');
+
+        modalCategory.innerHTML = `<span class="card-category cat-${memory.category}">${escapeHTML(memory.category || 'PHOTO')}</span>`;
+        modalTitle.textContent = memory.title || "Untitled";
+        modalDesc.textContent = memory.description || "";
+        modalAuthor.textContent = `Uploaded by ${memory.uploadedBy || 'someone'}`;
+        modalDate.textContent = memory.dateCreated
+            ? new Date(memory.dateCreated).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" })
+            : "";
+        modalOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+    };
+
+    window.closeModal = function() {
+        modalOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+    };
+
+    // Upload multiple images
+    async function uploadImages(files) {
+        const formData = new FormData();
+        for (let file of files) {
+            formData.append("files", file);
+        }
+        const res = await fetch(`${API}/upload`, {
+            method: "POST",
+            body: formData
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        return await res.json(); // array of URLs
+    }
+
+    btnSave.addEventListener("click", async () => {
+        const title = document.getElementById("titleInput").value.trim();
+        const fileInput = document.getElementById("imageFiles");
+        const files = fileInput.files;
+
+        if (!title && files.length === 0) {
+            alert("Please enter a title or choose at least one image.");
+            return;
+        }
+
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+        let imageUrls = [];
+        try {
+            if (files.length > 0) {
+                imageUrls = await uploadImages(files);
+            }
+        } catch (e) {
+            alert("Image upload failed. Please try again.");
+            btnSave.disabled = false;
+            btnSave.innerHTML = "Save memory";
+            return;
+        }
+
+        const memory = {
+            title: title || "Untitled",
+            category: document.getElementById("categoryInput").value,
+            description: document.getElementById("descInput").value.trim(),
+            uploadedBy: document.getElementById("uploadedByInput").value.trim() || "Anonymous",
+            imageUrls: imageUrls, // send as array
+            dateCreated: new Date().toISOString()
+        };
+
+        try {
+            const res = await fetch(API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(memory)
+            });
+            if (!res.ok) throw new Error("Save failed");
+            closeForm();
+            loadMemories();
+        } catch (e) {
+            alert("Could not save memory. Check your connection.");
+        } finally {
+            btnSave.disabled = false;
+            btnSave.innerHTML = "Save memory";
+        }
+    });
+
+    async function deleteMemory(id) {
+        if (!confirm("Delete this memory?")) return;
+        try {
+            await fetch(`${API}/${id}`, { method: "DELETE" });
+            loadMemories();
+        } catch (e) {
+            alert("Delete failed.");
+        }
+    }
+    window.deleteMemory = deleteMemory;
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            tabButtons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentCategory = btn.dataset.category;
+            applyFilter();
+        });
+    });
+
+    function escapeHTML(str) {
+        const div = document.createElement("div");
+        div.textContent = str || "";
+        return div.innerHTML;
+    }
+
+    (function generateMatrix() {
+        const container = document.getElementById("matrixContainer");
+        const cols = Math.floor(window.innerWidth / 32);
+        const rows = Math.floor(window.innerHeight / 32);
+        const total = cols * rows;
+        const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
+        let html = '';
+        for (let i = 0; i < total; i++) {
+            html += `<span>${chars[Math.floor(Math.random() * chars.length)]}</span>`;
+        }
+        container.innerHTML = html;
+    })();
+
+    loadMemories();
+</script>
+</body>
+</html>

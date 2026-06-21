@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Letters · Our Space</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #070709;
+            --bg-primary: #0c0c11;
+            --bg-secondary: #111118;
+            --bg-card: #181820;
+            --bg-input: #1a1a24;
+            --rehema: #5db8d4;
+            --collins: #3cb878;
+            --mustard: #e0a83b;
+            --mustard-glow: rgba(224,168,59,0.35);
+            --mustard-soft: rgba(224,168,59,0.08);
+            --mustard-gradient: linear-gradient(135deg, #e0a83b, #c48f28);
+            --text-primary: #eeeef2;
+            --text-secondary: #b0b0bb;
+            --text-muted: #787882;
+            --border-subtle: #22222d;
+            --border-card: #1e1e2a;
+            --radius-lg: 14px;
+            --shadow-md: 0 10px 28px rgba(0,0,0,0.5);
+            --transition-fast: 0.15s ease;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#2a2a38; border-radius:10px; }
+
+        .jp-matrix {
+            position: fixed; inset: 0; z-index:0; overflow:hidden;
+            display:grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+            grid-auto-rows: 32px; justify-content: center; align-content: center;
+            font-size: 18px; color: rgba(0,150,255,0.4);
+            font-family: "Courier New", Courier, monospace; opacity: 0.14;
+            pointer-events: none; user-select: none;
+        }
+        .jp-matrix > span {
+            text-align: center; text-shadow: 0 0 5px rgba(0,150,255,0.5);
+            line-height:1; display:block;
+        }
+        .jp-matrix > span:nth-child(19n+2) { animation: smooth-pulse 3.5s ease-in-out infinite 0.2s; }
+        .jp-matrix > span:nth-child(29n+1) { animation: smooth-pulse 4.1s ease-in-out infinite 0.7s; }
+        .jp-matrix > span:nth-child(11n) { color: rgba(100,200,255,0.7); animation: smooth-pulse 2.9s ease-in-out infinite 1.1s; }
+        .jp-matrix > span:nth-child(37n+10) { animation: smooth-pulse 5.3s ease-in-out infinite 1.5s; }
+        .jp-matrix > span:nth-child(41n+1) { animation: smooth-pulse 3.9s ease-in-out infinite 0.4s; }
+        .jp-matrix > span:nth-child(17n+9) { animation: smooth-pulse 2.8s ease-in-out infinite 0.9s; }
+        .jp-matrix > span:nth-child(23n+18) { animation: smooth-pulse 4.3s ease-in-out infinite 1.3s; }
+        .jp-matrix > span:nth-child(31n+4) { animation: smooth-pulse 5.6s ease-in-out infinite 0.1s; }
+        .jp-matrix > span:nth-child(43n+20) { animation: smooth-pulse 3.6s ease-in-out infinite 1.8s; }
+        .jp-matrix > span:nth-child(13n+6) { animation: smooth-pulse 3.2s ease-in-out infinite 1.2s; }
+        .jp-matrix > span:nth-child(53n+5) { animation: smooth-pulse 4.9s ease-in-out infinite 0.5s; }
+        .jp-matrix > span:nth-child(47n+15) { animation: smooth-pulse 5.9s ease-in-out infinite 1s; }
+
+        @keyframes smooth-pulse {
+            0%,100% { color: rgba(0,150,255,0.4); text-shadow: 0 0 5px rgba(0,150,255,0.5); }
+            30% { color: rgba(100,200,255,1); text-shadow: 0 0 10px rgba(100,200,255,1), 0 0 15px rgba(100,200,255,1); }
+            50% { color: rgba(255,105,180,1); text-shadow: 0 0 10px rgba(255,105,180,1), 0 0 15px rgba(255,105,180,1); }
+            70% { color: #ffffff; text-shadow: 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #fff; }
+        }
+
+        .header {
+            background: var(--bg-secondary); border-bottom: 1px solid var(--border-subtle);
+            padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+        }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .header-icon {
+            width:34px; height:34px; border-radius:50%;
+            background: linear-gradient(135deg, var(--rehema), var(--collins), var(--mustard));
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.9rem; color:#000;
+            box-shadow:0 4px 16px rgba(93,184,212,0.25);
+        }
+        .header h1 { font-size:1.1rem; font-weight:700; }
+        .user-badge {
+            background: var(--bg-input); border:1px solid var(--border-card);
+            padding:6px 14px; border-radius:20px; font-size:0.8rem; font-weight:600;
+            display:flex; align-items:center; gap:6px;
+        }
+        .user-badge.Rehema { color: var(--rehema); }
+        .user-badge.Collins { color: var(--collins); }
+
+        .container { position: relative; z-index:1; max-width: 960px; margin:0 auto; padding: 20px 16px 40px; }
+
+        .tabs { display:flex; gap:10px; margin-bottom:20px; justify-content:center; flex-wrap:wrap; }
+        .tab-btn {
+            background: var(--bg-card); border:1px solid var(--border-card);
+            color: var(--text-secondary); padding:8px 20px; border-radius:30px;
+            cursor:pointer; font-size:0.85rem; font-weight:500;
+            transition:all var(--transition-fast);
+        }
+        .tab-btn.active { background: var(--mustard-soft); border-color: var(--mustard); color: var(--mustard); font-weight:600; }
+
+        .letter-list { display:flex; flex-direction:column; gap:12px; }
+        .letter-card {
+            background: var(--bg-card); border:1px solid var(--border-card);
+            border-radius: var(--radius-lg); padding:16px;
+            transition:all var(--transition-fast); box-shadow: var(--shadow-md);
+        }
+        .letter-header { display:flex; justify-content:space-between; margin-bottom:8px; }
+        .letter-title { font-weight:700; font-size:1rem; }
+        .letter-date { font-size:0.7rem; color:var(--text-muted); }
+        .letter-people { font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px; }
+        .letter-content { font-size:0.9rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px; white-space:pre-line; }
+        .letter-images { display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; }
+        .letter-images img { width:100px; height:80px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+        .letter-footer { display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); }
+        .letter-actions { display:flex; gap:8px; }
+        .btn-mark-read {
+            background:none; border:1px solid rgba(93,184,212,0.4); color: var(--rehema);
+            padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.7rem; font-weight:600;
+        }
+        .btn-delete {
+            background:none; border:1px solid rgba(255,80,80,0.4); color:#ff5e5e;
+            padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.7rem; font-weight:600;
+        }
+        .btn-reply {
+            background:none; border:1px solid rgba(255,215,0,0.4); color: var(--mustard);
+            padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.7rem; font-weight:600;
+        }
+        .read-badge { background: rgba(60,184,120,0.15); color: var(--collins); padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; }
+        .draft-badge { background: rgba(255,255,255,0.1); color:#aaa; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; }
+        .locked-badge { background: rgba(255,255,255,0.05); color: var(--text-muted); padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; }
+        .locked-card {
+            background: var(--bg-card);
+            border: 1px dashed var(--border-card);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            border-radius: var(--radius-lg);
+        }
+        .locked-card i { font-size: 1.8rem; opacity: 0.5; }
+        .replies-container {
+            margin-left: 20px;
+            border-left: 2px solid var(--border-card);
+            padding-left: 12px;
+            margin-top: 12px;
+        }
+        .reply-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .compose-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
+            z-index:50; display:none; align-items:flex-end;
+        }
+        .compose-overlay.active { display:flex; }
+        .compose-sheet {
+            background: var(--bg-secondary); width:100%; max-height:85vh;
+            border-radius:20px 20px 0 0; padding:20px; overflow-y:auto;
+            box-shadow:0 -10px 30px rgba(0,0,0,0.5);
+            transform:translateY(100%); transition:transform 0.3s ease;
+        }
+        .compose-overlay.active .compose-sheet { transform:translateY(0); }
+        .compose-sheet h3 { font-size:0.85rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:16px; }
+        .form-group { margin-bottom:14px; }
+        .form-group label { display:block; font-size:0.7rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:5px; }
+        input, textarea {
+            font-family:var(--font); font-size:0.85rem; padding:10px 14px;
+            border:1.5px solid var(--border-card); border-radius: var(--radius-lg);
+            background: var(--bg-input); color: var(--text-primary); width:100%;
+            outline:none; transition:all var(--transition-fast);
+        }
+        input:focus, textarea:focus { border-color: var(--mustard); }
+        textarea { resize:vertical; min-height:100px; }
+        .file-label {
+            display:flex; align-items:center; gap:8px; padding:10px 16px;
+            background: var(--bg-input); border:1.5px dashed var(--border-card);
+            border-radius: var(--radius-lg); color: var(--text-secondary);
+            font-size:0.85rem; cursor:pointer;
+        }
+        .file-label:hover { border-color: var(--mustard); color: var(--mustard); background: var(--mustard-soft); }
+        .file-label input { display:none; }
+        .compose-actions { display:flex; gap:10px; margin-top:16px; }
+        .btn-cancel {
+            background:none; border:1px solid var(--border-subtle); color: var(--text-secondary);
+            padding:12px; border-radius: var(--radius-lg); flex:1; font-weight:600; text-align:center; cursor:pointer;
+        }
+        .btn-save-draft {
+            background: rgba(255,255,255,0.1); border:1px solid #555;
+            color: var(--text-secondary); padding:12px; border-radius: var(--radius-lg); flex:1; font-weight:600; cursor:pointer;
+        }
+        .btn-send {
+            background: var(--mustard-gradient); border:none; color:#1a1000;
+            padding:12px; border-radius: var(--radius-lg); flex:1; font-weight:700; cursor:pointer;
+        }
+
+        .fab {
+            position:fixed; bottom:30px; right:20px; z-index:20;
+            background: var(--mustard-gradient); border:none; color:#1a1000;
+            width:56px; height:56px; border-radius:50%; font-size:1.5rem;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; box-shadow:0 8px 24px var(--mustard-glow);
+        }
+        .empty-state { text-align:center; padding:40px; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="jp-matrix" id="matrixContainer"></div>
+
+<div class="header">
+    <div class="header-left">
+        <div class="header-icon"><i class="fa-solid fa-envelope"></i></div>
+        <h1>Letters</h1>
+    </div>
+    <div class="user-badge" id="userBadge">
+        <i class="fa-solid fa-user"></i> <span id="currentUserName">...</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="inbox">📥 Inbox</button>
+        <button class="tab-btn" data-tab="sent">📤 Sent</button>
+        <button class="tab-btn" data-tab="drafts">📝 Drafts</button>
+    </div>
+    <div class="letter-list" id="letterList"></div>
+</div>
+
+<button class="fab" id="composeFab"><i class="fa-solid fa-pen"></i></button>
+
+<div class="compose-overlay" id="composeOverlay">
+    <div class="compose-sheet">
+        <h3 id="composeTitle">💌 New Letter</h3>
+        <input type="hidden" id="editDraftId" value="">
+        <input type="hidden" id="parentId" value="">
+        <div class="form-group"><label>Title</label><input type="text" id="letterTitle" placeholder="Sweet title..."></div>
+        <div class="form-group"><label>Your message</label><textarea id="letterContent" placeholder="Write from the heart..."></textarea></div>
+        <div class="form-group"><label>Date</label><input type="date" id="letterDate"></div>
+        <div class="form-group"><label>Open date (optional)</label><input type="date" id="letterOpenDate"></div>
+        <div class="form-group">
+            <label>Attach images</label>
+            <label class="file-label" for="letterImages">
+                <i class="fa-solid fa-image"></i> Choose photos
+                <input type="file" id="letterImages" multiple accept="image/*">
+            </label>
+            <div id="imageCount" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;"></div>
+        </div>
+        <div class="compose-actions">
+            <div class="btn-cancel" id="cancelCompose">Cancel</div>
+            <div class="btn-save-draft" id="saveDraftBtn">Save draft</div>
+            <button class="btn-send" id="sendLetterBtn">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+    const LETTERS_API = `${API_BASE}/api/letters`;
+    const USER_API = `${API_BASE}/api/current-user`;
+
+    let currentUser = "";
+    let activeTab = "inbox";
+    let allLetters = { inbox: [], sent: [], drafts: [] };
+    let repliesCache = {}; // store fetched replies by parentId
+
+    const letterList = document.getElementById("letterList");
+    const composeOverlay = document.getElementById("composeOverlay");
+    const composeFab = document.getElementById("composeFab");
+    const cancelCompose = document.getElementById("cancelCompose");
+    const sendBtn = document.getElementById("sendLetterBtn");
+    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const userBadge = document.getElementById("currentUserName");
+    const composeTitleEl = document.getElementById("composeTitle");
+    const editDraftId = document.getElementById("editDraftId");
+    const parentIdInput = document.getElementById("parentId");
+
+    function escapeHTML(str) {
+        const div = document.createElement("div");
+        div.textContent = str || "";
+        return div.innerHTML;
+    }
+
+    async function init() {
+        try {
+            const res = await fetch(USER_API);
+            if (!res.ok) throw new Error("Not logged in");
+            currentUser = await res.text();
+            if (!currentUser) throw new Error("Empty user");
+            userBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser}`;
+            userBadge.className = `user-badge ${currentUser}`;
+            loadAllData();
+        } catch (e) {
+            window.location.href = "/";
+        }
+    }
+
+    async function loadAllData() {
+        await Promise.all([loadInbox(), loadSent(), loadDrafts()]);
+        renderLetters();
+    }
+
+    async function loadInbox() {
+        try {
+            const res = await fetch(`${LETTERS_API}/inbox/${currentUser}`);
+            allLetters.inbox = await res.json();
+        } catch (e) { allLetters.inbox = []; }
+    }
+
+    async function loadSent() {
+        try {
+            const res = await fetch(`${LETTERS_API}/sent/${currentUser}`);
+            allLetters.sent = await res.json();
+        } catch (e) { allLetters.sent = []; }
+    }
+
+    async function loadDrafts() {
+        try {
+            const res = await fetch(`${LETTERS_API}/drafts/${currentUser}`);
+            allLetters.drafts = await res.json();
+        } catch (e) { allLetters.drafts = []; }
+    }
+
+    function isLocked(letter) {
+        if (!letter.openDate) return false;
+        const unlockDate = new Date(letter.openDate);
+        unlockDate.setHours(23, 59, 59, 0); // unlock at end of day
+        return unlockDate > new Date();
+    }
+
+    async function toggleReplies(letterId, container) {
+        if (container.innerHTML !== '') {
+            container.innerHTML = '';
+            return;
+        }
+        if (!repliesCache[letterId]) {
+            try {
+                const res = await fetch(`${LETTERS_API}/${letterId}/replies`);
+                if (!res.ok) throw new Error("Failed");
+                repliesCache[letterId] = await res.json();
+            } catch (e) {
+                repliesCache[letterId] = [];
+            }
+        }
+        const replies = repliesCache[letterId];
+        if (replies.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="padding:10px;">No replies yet.</div>';
+            return;
+        }
+        container.innerHTML = replies.map(r => `
+            <div class="reply-card">
+                <div class="letter-header">
+                    <span class="letter-title">${escapeHTML(r.title || "Reply")}</span>
+                    <span class="letter-date">${r.date || ""}</span>
+                </div>
+                <div class="letter-people"><i class="fa-solid fa-reply"></i> ${escapeHTML(r.sender)}</div>
+                <div class="letter-content">${escapeHTML(r.content || "")}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderLetters() {
+        let letters = [];
+        if (activeTab === "inbox") letters = allLetters.inbox;
+        else if (activeTab === "sent") letters = allLetters.sent;
+        else if (activeTab === "drafts") letters = allLetters.drafts;
+
+        if (!letters.length) {
+            letterList.innerHTML = `<div class="empty-state">No ${activeTab} letters yet.</div>`;
+            return;
+        }
+
+        letterList.innerHTML = letters.map(l => {
+            const isRead = l.read;
+            const isDraft = l.status === "DRAFT";
+            const imagePaths = l.imagePaths || [];
+            const openDate = l.openDate ? ` · Opens ${l.openDate}` : "";
+
+            if (isDraft) {
+                return `
+                <div class="letter-card">
+                    <div class="letter-header">
+                        <span class="letter-title">${escapeHTML(l.title || "Untitled")}</span>
+                        <span class="letter-date">Draft ${l.date || ""}</span>
+                    </div>
+                    <div class="letter-content">${escapeHTML(l.content || "")}</div>
+                    ${imagePaths.length ? `<div class="letter-images">${imagePaths.map(url => `<img src="${url}" alt="">`).join('')}</div>` : ''}
+                    <div class="letter-footer">
+                        <span class="draft-badge">✏️ Draft</span>
+                        <div class="letter-actions">
+                            <button class="btn-mark-read" onclick="editDraft(${l.id})">Edit</button>
+                            <button class="btn-delete" onclick="deleteLetter(${l.id})">Delete</button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            if (activeTab === "inbox" && isLocked(l)) {
+                // Locked letter
+                const unlockDateStr = new Date(l.openDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+                return `
+                <div class="locked-card">
+                    <i class="fa-solid fa-lock"></i>
+                    <span style="font-weight:600;">A letter will unlock on</span>
+                    <span style="font-size:1.1rem; color:var(--mustard);">${unlockDateStr}</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(l.title || "")}</span>
+                </div>`;
+            }
+
+            // Normal letter (unlocked inbox or sent)
+            const replyButton = activeTab === "inbox" ? `<button class="btn-reply" onclick="event.stopPropagation(); openReply(${l.id})">Reply</button>` : '';
+            const repliesId = `replies-${l.id}`;
+            const repliesToggle = `<button class="btn-mark-read" onclick="event.stopPropagation(); toggleReplies(${l.id}, document.getElementById('${repliesId}'))">Replies</button>`;
+
+            return `
+            <div class="letter-card">
+                <div class="letter-header">
+                    <span class="letter-title">${escapeHTML(l.title || "Untitled")}</span>
+                    <span class="letter-date">${l.date || ""}${openDate}</span>
+                </div>
+                <div class="letter-people">
+                    <i class="fa-solid fa-paper-plane"></i> ${escapeHTML(l.sender)} → ${escapeHTML(l.receiver)}
+                </div>
+                <div class="letter-content">${escapeHTML(l.content || "")}</div>
+                ${imagePaths.length ? `<div class="letter-images">${imagePaths.map(url => `<img src="${url}" alt="">`).join('')}</div>` : ''}
+                <div class="letter-footer">
+                    <div>
+                        ${isRead ? '<span class="read-badge"><i class="fa-solid fa-check"></i> Read</span>' : '<span style="color:var(--text-muted);">Unread</span>'}
+                    </div>
+                    <div class="letter-actions">
+                        ${!isRead && activeTab === "inbox" ? `<button class="btn-mark-read" onclick="markRead(${l.id})">Mark read</button>` : ''}
+                        ${replyButton}
+                        ${repliesToggle}
+                        <button class="btn-delete" onclick="deleteLetter(${l.id})">Delete</button>
+                    </div>
+                </div>
+                <div id="${repliesId}" class="replies-container" style="display:none;"></div>
+            </div>`;
+        }).join("");
+    }
+
+    function openReply(parentLetterId) {
+        const parent = allLetters.inbox.find(l => l.id == parentLetterId) || {};
+        parentIdInput.value = parentLetterId;
+        document.getElementById("letterTitle").value = parent.title ? `Re: ${parent.title}` : "";
+        document.getElementById("letterContent").value = "";
+        document.getElementById("letterDate").value = new Date().toISOString().split('T')[0];
+        document.getElementById("letterOpenDate").value = "";
+        document.getElementById("letterImages").value = "";
+        document.getElementById("imageCount").textContent = "";
+        editDraftId.value = "";
+        composeTitleEl.textContent = "💬 Reply";
+        composeOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function openCompose(draft = null) {
+        parentIdInput.value = "";
+        document.getElementById("letterTitle").value = draft ? draft.title : "";
+        document.getElementById("letterContent").value = draft ? draft.content : "";
+        document.getElementById("letterDate").value = draft ? draft.date : new Date().toISOString().split('T')[0];
+        document.getElementById("letterOpenDate").value = draft ? (draft.openDate || "") : "";
+        document.getElementById("letterImages").value = "";
+        document.getElementById("imageCount").textContent = "";
+        editDraftId.value = draft ? draft.id : "";
+        composeTitleEl.textContent = draft ? "✏️ Edit Draft" : "💌 New Letter";
+        composeOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeCompose() {
+        composeOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+
+    async function saveLetter(status = "SENT") {
+        const title = document.getElementById("letterTitle").value.trim();
+        const content = document.getElementById("letterContent").value.trim();
+        const date = document.getElementById("letterDate").value;
+        const openDate = document.getElementById("letterOpenDate").value;
+        const files = document.getElementById("letterImages").files;
+        const parentId = parentIdInput.value;
+        const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
+        const sender = currentUser;
+        const draftId = editDraftId.value;
+
+        if (!title && !content && files.length === 0) {
+            alert("Please fill something in.");
+            return;
+        }
+
+        try {
+            let response;
+            if (draftId) {
+                response = await fetch(`${LETTERS_API}/${draftId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, content, date, openDate, receiver, status: status.toUpperCase(), parentId: parentId || null })
+                });
+            } else {
+                const formData = new FormData();
+                formData.append("title", title);
+                formData.append("content", content);
+                formData.append("sender", sender);
+                formData.append("receiver", receiver);
+                formData.append("date", date);
+                formData.append("openDate", openDate);
+                formData.append("status", status.toUpperCase());
+                if (parentId) formData.append("parentId", parentId);
+                for (let f of files) {
+                    formData.append("images", f);
+                }
+                response = await fetch(LETTERS_API, { method: "POST", body: formData });
+            }
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error (${response.status}): ${errorText}`);
+            }
+
+            closeCompose();
+            await loadAllData();
+            renderLetters();
+        } catch (error) {
+            console.error("Save error:", error);
+            alert("Could not save: " + error.message);
+        }
+    }
+
+    window.editDraft = function(id) {
+        const draft = allLetters.drafts.find(d => d.id == id);
+        if (draft) openCompose(draft);
+    };
+
+    window.markRead = async function(id) {
+        await fetch(`${LETTERS_API}/${id}/read`, { method: "PUT" });
+        loadInbox().then(renderLetters);
+    };
+
+    window.deleteLetter = async function(id) {
+        if (!confirm("Delete this letter?")) return;
+        await fetch(`${LETTERS_API}/${id}`, { method: "DELETE" });
+        loadAllData().then(renderLetters);
+    };
+
+    document.getElementById("letterImages").addEventListener("change", (e) => {
+        document.getElementById("imageCount").textContent = e.target.files.length ? `${e.target.files.length} image(s)` : "";
+    });
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            tabBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            activeTab = btn.dataset.tab;
+            renderLetters();
+        });
+    });
+
+    composeFab.addEventListener("click", () => openCompose());
+    cancelCompose.addEventListener("click", closeCompose);
+    composeOverlay.addEventListener("click", (e) => { if (e.target === composeOverlay) closeCompose(); });
+
+    sendBtn.addEventListener("click", () => saveLetter("SENT"));
+    saveDraftBtn.addEventListener("click", () => saveLetter("DRAFT"));
+
+    (function generateMatrix() {
+        const container = document.getElementById("matrixContainer");
+        const cols = Math.floor(window.innerWidth / 32);
+        const rows = Math.floor(window.innerHeight / 32);
+        const total = cols * rows;
+        const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
+        let html = '';
+        for (let i = 0; i < total; i++) html += `<span>${chars[Math.floor(Math.random() * chars.length)]}</span>`;
+        container.innerHTML = html;
+    })();
+
+    init();
+</script>
+</body>
+</html>

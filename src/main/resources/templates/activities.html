@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activities · Our Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep: #060609;
+            --bg-card: #111118;
+            --bg-input: #181820;
+            --bg-hover: #1e1e2a;
+            --mustard: #e0a83b;
+            --mustard-glow: rgba(224,168,59,0.35);
+            --mustard-soft: rgba(224,168,59,0.08);
+            --rose: #e0887c;
+            --rose-glow: rgba(224,136,124,0.3);
+            --sky: #5db8d4;
+            --sky-soft: rgba(93,184,212,0.1);
+            --text-primary: #edeef2;
+            --text-secondary: #b0b3bd;
+            --text-muted: #6f727d;
+            --border-subtle: #1f1f2b;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-md: 0 8px 20px rgba(0,0,0,0.5);
+            --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#2a2a38; border-radius:10px; }
+
+        /* Header */
+        .header {
+            background: #0a0a10;
+            border-bottom:1px solid var(--border-subtle);
+            padding:16px 24px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            flex-wrap:wrap;
+            gap:12px;
+            position:sticky;
+            top:0;
+            z-index:20;
+            backdrop-filter:blur(8px);
+        }
+        .header-left {
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .header-icon {
+            width:38px; height:38px;
+            border-radius:50%;
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            display:flex; align-items:center; justify-content:center;
+            color:#000; font-size:1rem;
+            box-shadow:0 4px 16px var(--mustard-glow);
+        }
+        .header h1 {
+            font-size:1.2rem; font-weight:700;
+        }
+        .header-stats {
+            font-size:0.8rem;
+            color:var(--text-muted);
+            background:var(--bg-input);
+            padding:6px 14px;
+            border-radius:20px;
+            border:1px solid var(--border-subtle);
+        }
+
+        .container {
+            max-width:1100px;
+            margin:0 auto;
+            padding:24px 20px 40px;
+        }
+
+        /* Add button */
+        .add-bar {
+            display:flex;
+            justify-content:center;
+            margin-bottom:20px;
+        }
+        .btn-add {
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            border:none;
+            color:#1a1000;
+            font-weight:700;
+            padding:12px 28px;
+            border-radius:40px;
+            cursor:pointer;
+            font-size:0.9rem;
+            display:flex; align-items:center; gap:8px;
+            box-shadow:0 6px 18px var(--mustard-glow);
+            transition:all var(--transition-smooth);
+            font-family:var(--font);
+        }
+        .btn-add:hover {
+            transform:translateY(-2px);
+            box-shadow:0 12px 28px rgba(224,168,59,0.5);
+            filter:brightness(1.08);
+        }
+
+        /* Form panel */
+        .form-panel {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            border-radius:var(--radius-lg);
+            padding:24px;
+            margin-bottom:24px;
+            display:none;
+            box-shadow:var(--shadow-md);
+        }
+        .form-panel.visible { display:block; }
+        .form-title {
+            font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em;
+            color:var(--text-muted); font-weight:600; margin-bottom:18px;
+        }
+        .form-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+        }
+        .form-group { display:flex; flex-direction:column; gap:5px; }
+        .form-group label {
+            font-size:0.7rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:0.04em;
+        }
+        input, select {
+            font-family:var(--font); font-size:0.85rem;
+            padding:10px 14px;
+            border:1.5px solid var(--border-subtle);
+            border-radius:8px;
+            background:var(--bg-input);
+            color:var(--text-primary);
+            outline:none;
+        }
+        input:focus, select:focus {
+            border-color:var(--mustard);
+            box-shadow:0 0 0 3px rgba(224,168,59,0.08);
+        }
+        .form-actions {
+            grid-column:span 2;
+            display:flex; gap:10px; justify-content:flex-end; margin-top:8px;
+        }
+        .btn-cancel {
+            background:none; border:1px solid var(--border-subtle);
+            color:var(--text-secondary); padding:10px 20px; border-radius:8px;
+            cursor:pointer; font-family:var(--font); font-weight:500;
+        }
+        .btn-save {
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            border:none; color:#1a1000; font-weight:700;
+            padding:10px 24px; border-radius:8px; cursor:pointer;
+            font-family:var(--font);
+            box-shadow:0 4px 12px var(--mustard-glow);
+        }
+
+        /* Filter pills */
+        .filter-bar {
+            display:flex;
+            justify-content:center;
+            gap:10px;
+            margin-bottom:24px;
+            flex-wrap:wrap;
+        }
+        .filter-pill {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            color:var(--text-secondary);
+            padding:8px 18px;
+            border-radius:30px;
+            cursor:pointer;
+            font-size:0.8rem;
+            font-weight:500;
+            transition:all 0.15s;
+        }
+        .filter-pill:hover { background:var(--bg-hover); }
+        .filter-pill.active {
+            background:var(--mustard-soft);
+            border-color:var(--mustard);
+            color:var(--mustard);
+            font-weight:600;
+        }
+
+        /* Grid */
+        .grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap:18px;
+        }
+
+        /* Card */
+        .card {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            border-radius:var(--radius-lg);
+            padding:18px;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            transition:all var(--transition-smooth);
+            box-shadow:0 4px 12px rgba(0,0,0,0.4);
+        }
+        .card:hover {
+            border-color:#2e2e3c;
+            transform:translateY(-3px);
+            box-shadow:0 12px 28px rgba(0,0,0,0.6);
+        }
+        .card-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+        }
+        .card-title {
+            font-weight:700;
+            font-size:1rem;
+            color:var(--text-primary);
+        }
+        .badge {
+            font-size:0.7rem;
+            font-weight:600;
+            padding:4px 12px;
+            border-radius:20px;
+            text-transform:uppercase;
+            letter-spacing:0.03em;
+        }
+        .badge.PLANNED {
+            background:rgba(224,168,59,0.15);
+            color:var(--mustard);
+        }
+        .badge.COMPLETED {
+            background:rgba(60,184,120,0.15);
+            color:#3cb878;
+        }
+        .card-desc {
+            font-size:0.85rem;
+            color:var(--text-secondary);
+            line-height:1.4;
+        }
+        .card-meta {
+            display:flex;
+            align-items:center;
+            gap:12px;
+            font-size:0.75rem;
+            color:var(--text-muted);
+            flex-wrap:wrap;
+        }
+        .card-meta i { font-size:0.7rem; margin-right:3px; }
+
+        /* Rating area */
+        .rating-row {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .rating-label {
+            font-size:0.75rem;
+            font-weight:600;
+            color:var(--text-muted);
+            width:70px;
+        }
+        .stars {
+            display:flex;
+            gap:2px;
+        }
+        .star {
+            cursor:pointer;
+            font-size:1rem;
+            color:#3a3a46;
+            transition:color 0.1s;
+        }
+        .star.filled { color:var(--mustard); }
+        .star:hover { color:var(--mustard); }
+
+        .card-actions {
+            display:flex;
+            gap:10px;
+            margin-top:auto;
+        }
+        .btn-done, .btn-delete {
+            background:none;
+            border:1px solid var(--border-subtle);
+            padding:6px 12px;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:0.75rem;
+            font-weight:600;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            transition:all 0.15s;
+        }
+        .btn-done {
+            color:var(--mustard);
+            border-color:rgba(224,168,59,0.4);
+        }
+        .btn-done:hover {
+            background:rgba(224,168,59,0.1);
+            border-color:var(--mustard);
+        }
+        .btn-delete {
+            color:#e0887c;
+            border-color:rgba(224,136,124,0.4);
+        }
+        .btn-delete:hover {
+            background:rgba(224,136,124,0.1);
+            border-color:var(--rose);
+        }
+
+        .empty-state {
+            grid-column:1/-1;
+            text-align:center;
+            padding:60px 20px;
+            color:var(--text-muted);
+        }
+        .empty-state i { font-size:2.5rem; margin-bottom:12px; opacity:0.7; }
+        .empty-state h3 { font-size:1.1rem; color:var(--text-primary); margin-bottom:6px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h1>Activities</h1>
+        </div>
+        <div class="header-stats" id="statsDisplay">0 adventures</div>
+    </div>
+
+    <div class="container">
+        <div class="add-bar">
+            <button class="btn-add" id="btnToggleForm"><i class="fa-solid fa-plus"></i> New activity</button>
+        </div>
+
+        <!-- Add form (no category, no image, no rating) -->
+        <div class="form-panel" id="formPanel">
+            <div class="form-title">✨ Plan something fun</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="titleInput" placeholder="Movie night, hike...">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="descInput" placeholder="What's the plan?">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="dateInput">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-cancel" id="btnCancelForm">Cancel</button>
+                    <button class="btn-save" id="btnSaveActivity">Save Activity</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="filter-bar">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="PLANNED">Planned</button>
+            <button class="filter-pill" data-filter="COMPLETED">Completed</button>
+        </div>
+
+        <div class="grid" id="activitiesGrid"></div>
+    </div>
+
+    <script>
+        (function() {
+            const API = "/api/activities";
+            let allActivities = [];
+            let currentFilter = 'all';
+
+            const grid = document.getElementById('activitiesGrid');
+            const statsDisplay = document.getElementById('statsDisplay');
+            const formPanel = document.getElementById('formPanel');
+            const btnToggleForm = document.getElementById('btnToggleForm');
+            const btnCancelForm = document.getElementById('btnCancelForm');
+            const btnSaveActivity = document.getElementById('btnSaveActivity');
+            const filterPills = document.querySelectorAll('.filter-pill');
+
+            const titleInput = document.getElementById('titleInput');
+            const descInput = document.getElementById('descInput');
+            const dateInput = document.getElementById('dateInput');
+
+            // Toggle form
+            btnToggleForm.addEventListener('click', () => {
+                formPanel.classList.add('visible');
+                btnToggleForm.style.display = 'none';
+            });
+            btnCancelForm.addEventListener('click', closeForm);
+
+            function closeForm() {
+                formPanel.classList.remove('visible');
+                btnToggleForm.style.display = 'flex';
+                titleInput.value = '';
+                descInput.value = '';
+                dateInput.value = '';
+            }
+
+            async function loadActivities(filter = 'all') {
+                let url = API;
+                if (filter === 'PLANNED' || filter === 'COMPLETED') url = `${API}/status/${filter}`;
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Failed');
+                    allActivities = await res.json();
+                } catch (e) {
+                    console.warn('Could not load activities.', e);
+                    allActivities = [];
+                }
+                render();
+                updateStats();
+            }
+
+            function render() {
+                if (!allActivities.length) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                            <h3>No activities yet</h3>
+                            <p>Plan your first date or adventure together.</p>
+                        </div>`;
+                    return;
+                }
+
+                grid.innerHTML = allActivities.map(act => {
+                    const statusClass = act.status;
+                    const isCompleted = act.status === 'COMPLETED';
+                    const ratingR = act.ratingRehema || 0;
+                    const ratingC = act.ratingCollins || 0;
+
+                    // Build stars HTML for each person
+                    const buildStars = (person, currentRating) => {
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += `<i class="fa-star star ${i <= currentRating ? 'fas filled' : 'far'}" 
+                                data-id="${act.id}" data-person="${person}" data-value="${i}"></i>`;
+                        }
+                        return starsHtml;
+                    };
+
+                    const ratingSection = isCompleted ? `
+                        <div class="rating-row">
+                            <span class="rating-label">Rehema</span>
+                            <div class="stars">${buildStars('rehema', ratingR)}</div>
+                        </div>
+                        <div class="rating-row">
+                            <span class="rating-label">Collins</span>
+                            <div class="stars">${buildStars('collins', ratingC)}</div>
+                        </div>` : '';
+
+                    return `
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title">${escapeHTML(act.title || 'Untitled')}</span>
+                                <span class="badge ${statusClass}">${act.status}</span>
+                            </div>
+                            <div class="card-desc">${escapeHTML(act.description || '')}</div>
+                            <div class="card-meta">
+                                <span><i class="fa-regular fa-calendar"></i> ${act.date || '—'}</span>
+                            </div>
+                            ${ratingSection}
+                            <div class="card-actions">
+                                ${!isCompleted ? `
+                                    <button class="btn-done" data-id="${act.id}" data-action="done">
+                                        <i class="fa-solid fa-circle-check"></i> Done
+                                    </button>` : ''}
+                                <button class="btn-delete" data-id="${act.id}" data-action="delete">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                // Attach event listeners
+                document.querySelectorAll('[data-action="done"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = btn.dataset.id;
+                        markDone(id);
+                    });
+                });
+                document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = btn.dataset.id;
+                        deleteActivity(id);
+                    });
+                });
+
+                // Star click events
+                document.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', async (e) => {
+                        const id = star.dataset.id;
+                        const person = star.dataset.person;
+                        const value = parseInt(star.dataset.value);
+                        await updateRating(id, person, value);
+                    });
+                });
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function updateStats() {
+                const total = allActivities.length;
+                const planned = allActivities.filter(a => a.status === 'PLANNED').length;
+                const completed = allActivities.filter(a => a.status === 'COMPLETED').length;
+                statsDisplay.textContent = `${total} adventures · ${planned} planned · ${completed} done`;
+            }
+
+            // Add activity
+            btnSaveActivity.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter a title.');
+                    return;
+                }
+                const newActivity = {
+                    title: title,
+                    description: descInput.value.trim(),
+                    date: dateInput.value,
+                    status: 'PLANNED',       // always planned when adding
+                    ratingRehema: 0,
+                    ratingCollins: 0
+                };
+                try {
+                    const res = await fetch(API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newActivity)
+                    });
+                    if (!res.ok) throw new Error('Add failed');
+                    closeForm();
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Could not add activity.');
+                }
+            });
+
+            // Delete
+            async function deleteActivity(id) {
+                if (!confirm('Delete this activity?')) return;
+                try {
+                    await fetch(`${API}/${id}`, { method: 'DELETE' });
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Delete failed.');
+                }
+            }
+
+            // Mark done (set status to COMPLETED)
+            async function markDone(id) {
+                const activity = allActivities.find(a => a.id == id);
+                if (!activity) return;
+                const updated = { ...activity, status: 'COMPLETED' };
+                try {
+                    await fetch(`${API}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Could not update status.');
+                }
+            }
+
+            // Update rating
+            async function updateRating(id, person, value) {
+                const activity = allActivities.find(a => a.id == id);
+                if (!activity) return;
+                const updated = { ...activity };
+                if (person === 'rehema') updated.ratingRehema = value;
+                else updated.ratingCollins = value;
+
+                try {
+                    await fetch(`${API}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    // Update local data to reflect immediately
+                    const idx = allActivities.findIndex(a => a.id == id);
+                    if (idx !== -1) {
+                        if (person === 'rehema') allActivities[idx].ratingRehema = value;
+                        else allActivities[idx].ratingCollins = value;
+                    }
+                    // Re-render to update star display
+                    render();
+                } catch (e) {
+                    alert('Rating update failed.');
+                }
+            }
+
+            // Filter handling
+            filterPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    filterPills.forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    currentFilter = pill.dataset.filter;
+                    loadActivities(currentFilter);
+                });
+            });
+
+            // Initial load
+            loadActivities('all');
+        })();
+    </script>
+</body>
+</html>
