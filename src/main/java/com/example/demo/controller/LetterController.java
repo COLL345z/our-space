@@ -1,12 +1,16 @@
 package com.example.demo.controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.entity.Letter;
 import com.example.demo.repository.LetterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.nio.file.*;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/letters")
@@ -16,31 +20,34 @@ public class LetterController {
     @Autowired
     private LetterRepository letterRepository;
 
-    // ── existing endpoints (GET inbox/sent, POST, DELETE, markRead) remain unchanged ──
+    @Autowired
+    private Cloudinary cloudinary;
 
-    // GET inbox for a user (only sent letters)
+    // GET inbox (only SENT)
     @GetMapping("/inbox/{user}")
     public List<Letter> getInbox(@PathVariable String user) {
         return letterRepository.findByReceiverAndStatus(user, "SENT");
     }
-    @GetMapping("/{id}/replies")
-public List<Letter> getReplies(@PathVariable Long id) {
-    return letterRepository.findByParentId(id);
-}
 
-    // GET sent by user (only sent)
+    // GET sent letters
     @GetMapping("/sent/{user}")
     public List<Letter> getSent(@PathVariable String user) {
         return letterRepository.findBySenderAndStatus(user, "SENT");
     }
 
-    // ── NEW: get drafts for a user ──
+    // GET drafts
     @GetMapping("/drafts/{user}")
     public List<Letter> getDrafts(@PathVariable String user) {
         return letterRepository.findBySenderAndStatus(user, "DRAFT");
     }
 
-    // ── CREATE letter (handles both SENT and DRAFT) ──
+    // GET replies
+    @GetMapping("/{id}/replies")
+    public List<Letter> getReplies(@PathVariable Long id) {
+        return letterRepository.findByParentId(id);
+    }
+
+    // CREATE LETTER (FIXED CLOUDINARY UPLOAD)
     @PostMapping
     public Letter createLetter(
             @RequestParam("title") String title,
@@ -58,27 +65,31 @@ public List<Letter> getReplies(@PathVariable Long id) {
         letter.setContent(content);
         letter.setSender(sender);
         letter.setReceiver(receiver);
-        letter.setDate(date);   // works because setter is still setRead()
+        letter.setDate(date);
         letter.setOpenDate(openDate);
-        letter.setStatus(status.toUpperCase());   // "SENT" or "DRAFT"
+        letter.setStatus(status.toUpperCase());
 
-        // handle images (same as before)
+        // ✅ CLOUDINARY FIX
         if (images != null && images.length > 0) {
             List<String> urls = new ArrayList<>();
+
             for (MultipartFile file : images) {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get("uploads/letters/" + filename);
-                Files.createDirectories(path.getParent());
-                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                urls.add("/uploads/letters/" + filename);
+                Map uploadResult = cloudinary.uploader().upload(
+                        file.getBytes(),
+                        ObjectUtils.emptyMap()
+                );
+
+                String url = uploadResult.get("secure_url").toString();
+                urls.add(url);
             }
+
             letter.setImagePaths(urls);
         }
 
         return letterRepository.save(letter);
     }
 
-    // ── UPDATE an existing letter (e.g., draft → sent) ──
+    // UPDATE LETTER
     @PutMapping("/{id}")
     public Letter updateLetter(@PathVariable Long id, @RequestBody Letter updated) {
         return letterRepository.findById(id).map(letter -> {
@@ -86,24 +97,24 @@ public List<Letter> getReplies(@PathVariable Long id) {
             letter.setContent(updated.getContent());
             letter.setDate(updated.getDate());
             letter.setOpenDate(updated.getOpenDate());
-            letter.setRead(true);   // works because setter is still setRead()
-            letter.setStatus(updated.getStatus());      // important: change DRAFT → SENT
-            letter.setReceiver(updated.getReceiver());  // maybe changed?
-            // images are not updated here; you could add a separate upload endpoint if needed
+            letter.setRead(true);
+            letter.setStatus(updated.getStatus());
+            letter.setReceiver(updated.getReceiver());
             return letterRepository.save(letter);
         }).orElse(null);
     }
 
-    // ── DELETE, markRead unchanged ──
+    // DELETE
     @DeleteMapping("/{id}")
     public void deleteLetter(@PathVariable Long id) {
         letterRepository.deleteById(id);
     }
 
+    // MARK AS READ
     @PutMapping("/{id}/read")
     public void markRead(@PathVariable Long id) {
         letterRepository.findById(id).ifPresent(letter -> {
-            letter.setRead(false);
+            letter.setRead(true);
             letterRepository.save(letter);
         });
     }
