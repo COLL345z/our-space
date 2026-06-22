@@ -275,329 +275,256 @@
         </div>
     </div>
 </div>
+ <script>
+const API_BASE = "https://our-space-htoh.onrender.com";
+const LETTERS_API = `${API_BASE}/api/letters`;
+const USER_API = `${API_BASE}/api/current-user`;
 
-<script>
-    const API = "https://our-space-htoh.onrender.com/api/letters";
-    const LETTERS_API = `${API_BASE}/api/letters`;
-    const USER_API = `${API_BASE}/api/current-user`;
+let currentUser = "";
+let activeTab = "inbox";
+let allLetters = { inbox: [], sent: [], drafts: [] };
+let repliesCache = {};
 
-    let currentUser = "";
-    let activeTab = "inbox";
-    let allLetters = { inbox: [], sent: [], drafts: [] };
-    let repliesCache = {}; // store fetched replies by parentId
+const letterList = document.getElementById("letterList");
+const composeOverlay = document.getElementById("composeOverlay");
+const composeFab = document.getElementById("composeFab");
+const cancelCompose = document.getElementById("cancelCompose");
+const sendBtn = document.getElementById("sendLetterBtn");
+const saveDraftBtn = document.getElementById("saveDraftBtn");
+const tabBtns = document.querySelectorAll(".tab-btn");
+const userBadge = document.getElementById("currentUserName");
+const composeTitleEl = document.getElementById("composeTitle");
+const editDraftId = document.getElementById("editDraftId");
+const parentIdInput = document.getElementById("parentId");
 
-    const letterList = document.getElementById("letterList");
-    const composeOverlay = document.getElementById("composeOverlay");
-    const composeFab = document.getElementById("composeFab");
-    const cancelCompose = document.getElementById("cancelCompose");
-    const sendBtn = document.getElementById("sendLetterBtn");
-    const saveDraftBtn = document.getElementById("saveDraftBtn");
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    const userBadge = document.getElementById("currentUserName");
-    const composeTitleEl = document.getElementById("composeTitle");
-    const editDraftId = document.getElementById("editDraftId");
-    const parentIdInput = document.getElementById("parentId");
+function escapeHTML(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+}
 
-    function escapeHTML(str) {
-        const div = document.createElement("div");
-        div.textContent = str || "";
-        return div.innerHTML;
-    }
-
-    async function init() {
-        try {
-            const res = await fetch(USER_API);
-            if (!res.ok) throw new Error("Not logged in");
-            currentUser = await res.text();
-            if (!currentUser) throw new Error("Empty user");
-            userBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser}`;
-            userBadge.className = `user-badge ${currentUser}`;
-            loadAllData();
-        } catch (e) {
-            window.location.href = "/";
-        }
-    }
-
-    async function loadAllData() {
-        await Promise.all([loadInbox(), loadSent(), loadDrafts()]);
-        renderLetters();
-    }
-
-    async function loadInbox() {
-        try {
-            const res = await fetch(`${LETTERS_API}/inbox/${currentUser}`);
-            allLetters.inbox = await res.json();
-        } catch (e) { allLetters.inbox = []; }
-    }
-
-    async function loadSent() {
-        try {
-            const res = await fetch(`${LETTERS_API}/sent/${currentUser}`);
-            allLetters.sent = await res.json();
-        } catch (e) { allLetters.sent = []; }
-    }
-
-    async function loadDrafts() {
-        try {
-            const res = await fetch(`${LETTERS_API}/drafts/${currentUser}`);
-            allLetters.drafts = await res.json();
-        } catch (e) { allLetters.drafts = []; }
-    }
-
-    function isLocked(letter) {
-        if (!letter.openDate) return false;
-        const unlockDate = new Date(letter.openDate);
-        unlockDate.setHours(23, 59, 59, 0); // unlock at end of day
-        return unlockDate > new Date();
-    }
-
-    async function toggleReplies(letterId, container) {
-        if (container.innerHTML !== '') {
-            container.innerHTML = '';
-            return;
-        }
-        if (!repliesCache[letterId]) {
-            try {
-                const res = await fetch(`${LETTERS_API}/${letterId}/replies`);
-                if (!res.ok) throw new Error("Failed");
-                repliesCache[letterId] = await res.json();
-            } catch (e) {
-                repliesCache[letterId] = [];
-            }
-        }
-        const replies = repliesCache[letterId];
-        if (replies.length === 0) {
-            container.innerHTML = '<div class="empty-state" style="padding:10px;">No replies yet.</div>';
-            return;
-        }
-        container.innerHTML = replies.map(r => `
-            <div class="reply-card">
-                <div class="letter-header">
-                    <span class="letter-title">${escapeHTML(r.title || "Reply")}</span>
-                    <span class="letter-date">${r.date || ""}</span>
-                </div>
-                <div class="letter-people"><i class="fa-solid fa-reply"></i> ${escapeHTML(r.sender)}</div>
-                <div class="letter-content">${escapeHTML(r.content || "")}</div>
-            </div>
-        `).join('');
-    }
-
-    function renderLetters() {
-        let letters = [];
-        if (activeTab === "inbox") letters = allLetters.inbox;
-        else if (activeTab === "sent") letters = allLetters.sent;
-        else if (activeTab === "drafts") letters = allLetters.drafts;
-
-        if (!letters.length) {
-            letterList.innerHTML = `<div class="empty-state">No ${activeTab} letters yet.</div>`;
-            return;
-        }
-
-        letterList.innerHTML = letters.map(l => {
-            const isRead = l.read;
-            const isDraft = l.status === "DRAFT";
-            const imagePaths = l.imagePaths || [];
-            const openDate = l.openDate ? ` · Opens ${l.openDate}` : "";
-
-            if (isDraft) {
-                return `
-                <div class="letter-card">
-                    <div class="letter-header">
-                        <span class="letter-title">${escapeHTML(l.title || "Untitled")}</span>
-                        <span class="letter-date">Draft ${l.date || ""}</span>
-                    </div>
-                    <div class="letter-content">${escapeHTML(l.content || "")}</div>
-                    ${imagePaths.length ? `<div class="letter-images">${imagePaths.map(url => `<img src="${url}" alt="">`).join('')}</div>` : ''}
-                    <div class="letter-footer">
-                        <span class="draft-badge">✏️ Draft</span>
-                        <div class="letter-actions">
-                            <button class="btn-mark-read" onclick="editDraft(${l.id})">Edit</button>
-                            <button class="btn-delete" onclick="deleteLetter(${l.id})">Delete</button>
-                        </div>
-                    </div>
-                </div>`;
-            }
-
-            if (activeTab === "inbox" && isLocked(l)) {
-                // Locked letter
-                const unlockDateStr = new Date(l.openDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-                return `
-                <div class="locked-card">
-                    <i class="fa-solid fa-lock"></i>
-                    <span style="font-weight:600;">A letter will unlock on</span>
-                    <span style="font-size:1.1rem; color:var(--mustard);">${unlockDateStr}</span>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(l.title || "")}</span>
-                </div>`;
-            }
-
-            // Normal letter (unlocked inbox or sent)
-            const replyButton = activeTab === "inbox" ? `<button class="btn-reply" onclick="event.stopPropagation(); openReply(${l.id})">Reply</button>` : '';
-            const repliesId = `replies-${l.id}`;
-            const repliesToggle = `<button class="btn-mark-read" onclick="event.stopPropagation(); toggleReplies(${l.id}, document.getElementById('${repliesId}'))">Replies</button>`;
-
-            return `
-            <div class="letter-card">
-                <div class="letter-header">
-                    <span class="letter-title">${escapeHTML(l.title || "Untitled")}</span>
-                    <span class="letter-date">${l.date || ""}${openDate}</span>
-                </div>
-                <div class="letter-people">
-                    <i class="fa-solid fa-paper-plane"></i> ${escapeHTML(l.sender)} → ${escapeHTML(l.receiver)}
-                </div>
-                <div class="letter-content">${escapeHTML(l.content || "")}</div>
-                ${imagePaths.length ? `<div class="letter-images">${imagePaths.map(url => `<img src="${url}" alt="">`).join('')}</div>` : ''}
-                <div class="letter-footer">
-                    <div>
-                        ${isRead ? '<span class="read-badge"><i class="fa-solid fa-check"></i> Read</span>' : '<span style="color:var(--text-muted);">Unread</span>'}
-                    </div>
-                    <div class="letter-actions">
-                        ${!isRead && activeTab === "inbox" ? `<button class="btn-mark-read" onclick="markRead(${l.id})">Mark read</button>` : ''}
-                        ${replyButton}
-                        ${repliesToggle}
-                        <button class="btn-delete" onclick="deleteLetter(${l.id})">Delete</button>
-                    </div>
-                </div>
-                <div id="${repliesId}" class="replies-container" style="display:none;"></div>
-            </div>`;
-        }).join("");
-    }
-
-    function openReply(parentLetterId) {
-        const parent = allLetters.inbox.find(l => l.id == parentLetterId) || {};
-        parentIdInput.value = parentLetterId;
-        document.getElementById("letterTitle").value = parent.title ? `Re: ${parent.title}` : "";
-        document.getElementById("letterContent").value = "";
-        document.getElementById("letterDate").value = new Date().toISOString().split('T')[0];
-        document.getElementById("letterOpenDate").value = "";
-        document.getElementById("letterImages").value = "";
-        document.getElementById("imageCount").textContent = "";
-        editDraftId.value = "";
-        composeTitleEl.textContent = "💬 Reply";
-        composeOverlay.classList.add("active");
-        document.body.style.overflow = "hidden";
-    }
-
-    function openCompose(draft = null) {
-        parentIdInput.value = "";
-        document.getElementById("letterTitle").value = draft ? draft.title : "";
-        document.getElementById("letterContent").value = draft ? draft.content : "";
-        document.getElementById("letterDate").value = draft ? draft.date : new Date().toISOString().split('T')[0];
-        document.getElementById("letterOpenDate").value = draft ? (draft.openDate || "") : "";
-        document.getElementById("letterImages").value = "";
-        document.getElementById("imageCount").textContent = "";
-        editDraftId.value = draft ? draft.id : "";
-        composeTitleEl.textContent = draft ? "✏️ Edit Draft" : "💌 New Letter";
-        composeOverlay.classList.add("active");
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeCompose() {
-        composeOverlay.classList.remove("active");
-        document.body.style.overflow = "";
-    }
-
-    async function saveLetter(status = "SENT") {
-        const title = document.getElementById("letterTitle").value.trim();
-        const content = document.getElementById("letterContent").value.trim();
-        const date = document.getElementById("letterDate").value;
-        const openDate = document.getElementById("letterOpenDate").value;
-        const files = document.getElementById("letterImages").files;
-        const parentId = parentIdInput.value;
-        const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
-        const sender = currentUser;
-        const draftId = editDraftId.value;
-
-        if (!title && !content && files.length === 0) {
-            alert("Please fill something in.");
-            return;
-        }
-
-        try {
-            let response;
-            if (draftId) {
-                response = await fetch(`${LETTERS_API}/${draftId}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title, content, date, openDate, receiver, status: status.toUpperCase(), parentId: parentId || null })
-                });
-            } else {
-                const formData = new FormData();
-                formData.append("title", title);
-                formData.append("content", content);
-                formData.append("sender", sender);
-                formData.append("receiver", receiver);
-                formData.append("date", date);
-                formData.append("openDate", openDate);
-                formData.append("status", status.toUpperCase());
-                if (parentId) formData.append("parentId", parentId);
-                for (let f of files) {
-                    formData.append("images", f);
-                }
-                response = await fetch(LETTERS_API, { method: "POST", body: formData });
-            }
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Server error (${response.status}): ${errorText}`);
-            }
-
-            closeCompose();
-            await loadAllData();
-            renderLetters();
-        } catch (error) {
-            console.error("Save error:", error);
-            alert("Could not save: " + error.message);
-        }
-    }
-
-    window.editDraft = function(id) {
-        const draft = allLetters.drafts.find(d => d.id == id);
-        if (draft) openCompose(draft);
-    };
-
-    window.markRead = async function(id) {
-        await fetch(`${LETTERS_API}/${id}/read`, { method: "PUT" });
-        loadInbox().then(renderLetters);
-    };
-
-    window.deleteLetter = async function(id) {
-        if (!confirm("Delete this letter?")) return;
-        await fetch(`${LETTERS_API}/${id}`, { method: "DELETE" });
-        loadAllData().then(renderLetters);
-    };
-
-    document.getElementById("letterImages").addEventListener("change", (e) => {
-        document.getElementById("imageCount").textContent = e.target.files.length ? `${e.target.files.length} image(s)` : "";
-    });
-
-    tabBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            tabBtns.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            activeTab = btn.dataset.tab;
-            renderLetters();
+/* =========================
+   INIT USER (SESSION BASED)
+========================= */
+async function init() {
+    try {
+        const res = await fetch(USER_API, {
+            credentials: "include"
         });
+
+        if (!res.ok) throw new Error("Not logged in");
+
+        currentUser = await res.text();
+        if (!currentUser) throw new Error("Empty user");
+
+        userBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser}`;
+        loadAllData();
+
+    } catch (e) {
+        window.location.href = "/";
+    }
+}
+
+/* =========================
+   LOAD DATA (SESSION SAFE)
+========================= */
+async function loadAllData() {
+    await Promise.all([loadInbox(), loadSent(), loadDrafts()]);
+    renderLetters();
+}
+
+async function loadInbox() {
+    try {
+        const res = await fetch(`${LETTERS_API}/inbox`, {
+            credentials: "include"
+        });
+        allLetters.inbox = await res.json();
+    } catch (e) {
+        allLetters.inbox = [];
+    }
+}
+
+async function loadSent() {
+    try {
+        const res = await fetch(`${LETTERS_API}/sent`, {
+            credentials: "include"
+        });
+        allLetters.sent = await res.json();
+    } catch (e) {
+        allLetters.sent = [];
+    }
+}
+
+async function loadDrafts() {
+    try {
+        const res = await fetch(`${LETTERS_API}/drafts`, {
+            credentials: "include"
+        });
+        allLetters.drafts = await res.json();
+    } catch (e) {
+        allLetters.drafts = [];
+    }
+}
+
+/* =========================
+   REPLIES
+========================= */
+async function toggleReplies(letterId, container) {
+    if (container.innerHTML !== "") {
+        container.innerHTML = "";
+        return;
+    }
+
+    if (!repliesCache[letterId]) {
+        try {
+            const res = await fetch(`${LETTERS_API}/${letterId}/replies`, {
+                credentials: "include"
+            });
+            repliesCache[letterId] = await res.json();
+        } catch (e) {
+            repliesCache[letterId] = [];
+        }
+    }
+
+    const replies = repliesCache[letterId];
+
+    if (!replies.length) {
+        container.innerHTML = `<div style="padding:10px;">No replies yet.</div>`;
+        return;
+    }
+
+    container.innerHTML = replies.map(r => `
+        <div class="reply-card">
+            <div>${escapeHTML(r.title || "Reply")}</div>
+            <div>${escapeHTML(r.sender)}</div>
+            <div>${escapeHTML(r.content || "")}</div>
+        </div>
+    `).join("");
+}
+
+/* =========================
+   RENDER
+========================= */
+function renderLetters() {
+    let letters = allLetters[activeTab];
+
+    if (!letters.length) {
+        letterList.innerHTML = `<div class="empty-state">No ${activeTab} letters yet.</div>`;
+        return;
+    }
+
+    letterList.innerHTML = letters.map(l => {
+        const repliesId = `replies-${l.id}`;
+
+        return `
+        <div class="letter-card">
+            <div class="letter-header">
+                <span>${escapeHTML(l.title)}</span>
+                <span>${l.date || ""}</span>
+            </div>
+
+            <div>${escapeHTML(l.content)}</div>
+
+            <div class="letter-actions">
+                <button onclick="toggleReplies(${l.id}, document.getElementById('${repliesId}'))">
+                    Replies
+                </button>
+
+                ${activeTab === "inbox" ? `
+                    <button onclick="markRead(${l.id})">Mark read</button>
+                    <button onclick="openReply(${l.id})">Reply</button>
+                ` : ""}
+
+                <button onclick="deleteLetter(${l.id})">Delete</button>
+            </div>
+
+            <div id="${repliesId}"></div>
+        </div>
+        `;
+    }).join("");
+}
+
+/* =========================
+   OPEN REPLY
+========================= */
+function openReply(parentId) {
+    parentIdInput.value = parentId;
+    composeOverlay.classList.add("active");
+}
+
+/* =========================
+   SAVE LETTER
+========================= */
+async function saveLetter(status = "SENT") {
+    const title = document.getElementById("letterTitle").value;
+    const content = document.getElementById("letterContent").value;
+    const date = document.getElementById("letterDate").value;
+    const openDate = document.getElementById("letterOpenDate").value;
+    const files = document.getElementById("letterImages").files;
+    const parentId = parentIdInput.value;
+
+    const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("sender", currentUser);
+    formData.append("receiver", receiver);
+    formData.append("date", date);
+    formData.append("openDate", openDate);
+    formData.append("status", status);
+
+    if (parentId) formData.append("parentId", parentId);
+
+    for (let f of files) {
+        formData.append("images", f);
+    }
+
+    await fetch(LETTERS_API, {
+        method: "POST",
+        body: formData,
+        credentials: "include"
     });
 
-    composeFab.addEventListener("click", () => openCompose());
-    cancelCompose.addEventListener("click", closeCompose);
-    composeOverlay.addEventListener("click", (e) => { if (e.target === composeOverlay) closeCompose(); });
+    composeOverlay.classList.remove("active");
+    await loadAllData();
+}
 
-    sendBtn.addEventListener("click", () => saveLetter("SENT"));
-    saveDraftBtn.addEventListener("click", () => saveLetter("DRAFT"));
+/* =========================
+   ACTIONS
+========================= */
+window.markRead = async function(id) {
+    await fetch(`${LETTERS_API}/${id}/read`, {
+        method: "PUT",
+        credentials: "include"
+    });
+    loadAllData();
+};
 
-    (function generateMatrix() {
-        const container = document.getElementById("matrixContainer");
-        const cols = Math.floor(window.innerWidth / 32);
-        const rows = Math.floor(window.innerHeight / 32);
-        const total = cols * rows;
-        const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
-        let html = '';
-        for (let i = 0; i < total; i++) html += `<span>${chars[Math.floor(Math.random() * chars.length)]}</span>`;
-        container.innerHTML = html;
-    })();
+window.deleteLetter = async function(id) {
+    await fetch(`${LETTERS_API}/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+    });
+    loadAllData();
+};
 
-    init();
-</script>
+/* =========================
+   TABS
+========================= */
+tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        tabBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeTab = btn.dataset.tab;
+        renderLetters();
+    });
+});
+
+/* =========================
+   INIT
+========================= */
+init();
+ </script>
 </body>
 </html>
