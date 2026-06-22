@@ -314,7 +314,7 @@ async function init() {
 
         if (!res.ok) throw new Error("Not logged in");
 
-        currentUser = await res.text();
+        currentUser = (await res.text()).trim();
         if (!currentUser) throw new Error("Empty user");
 
         userBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser}`;
