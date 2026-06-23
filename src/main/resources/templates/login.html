@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Our Space · Dashboard</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         :root {
             --bg-deep: #070709;
@@ -138,20 +136,20 @@
             position:relative;
         }
 
-        /* Sidebar - semi-transparent, reduced width */
+        /* Sidebar – semi-transparent, reduced width */
         .sidebar {
             position: relative;
-            width: 180px;
-            min-width: 180px;
-            background: rgba(12, 12, 17, 0.85);  /* semi-transparent */
-            backdrop-filter: blur(12px);          /* slight blur for glass effect */
+            width: 170px;
+            min-width: 170px;
+            background: rgba(12, 12, 17, 0.6);   /* ~60% opacity – not fully transparent */
+            backdrop-filter: blur(12px);
             border-right:1px solid var(--border-subtle);
             display:flex;
             flex-direction:column;
             flex-shrink:0;
             overflow-y:auto;
             z-index:10;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .profile-card {
@@ -159,7 +157,7 @@
             border-radius:var(--radius-lg);
             padding:16px;
             border:1px solid var(--border-card);
-            background: rgba(24,24,32,0.7);
+            background: rgba(24,24,32,0.5);
             position:relative;
             overflow:hidden;
         }
@@ -168,35 +166,35 @@
             background:linear-gradient(90deg, var(--rehema), var(--mustard), var(--collins));
             border-radius:3px 3px 0 0;
         }
-        .couple-label { font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
-        .profile-names { display:flex; flex-direction:column; gap:3px; margin-top:8px; }
-        .rehema-name { color:var(--rehema); font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px; }
-        .collins-name { color:var(--collins); font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px; }
-        .name-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .color-dots { display:flex; gap:6px; margin-top:10px; }
-        .dot { width:10px; height:10px; border-radius:50%; transition:transform var(--transition-smooth); }
+        .couple-label { font-size:0.6rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
+        .profile-names { display:flex; flex-direction:column; gap:2px; margin-top:6px; }
+        .rehema-name { color:var(--rehema); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
+        .collins-name { color:var(--collins); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
+        .name-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .color-dots { display:flex; gap:5px; margin-top:8px; }
+        .dot { width:8px; height:8px; border-radius:50%; transition:transform var(--transition-smooth); }
         .dot:hover { transform:scale(1.5); }
 
-        .nav { padding:8px 10px; flex:1; display:flex; flex-direction:column; gap:1px; }
+        .nav { padding:6px 10px; flex:1; display:flex; flex-direction:column; gap:1px; }
         .nav-btn {
-            width:100%; padding:10px 12px; border:none; border-radius:var(--radius-sm);
-            cursor:pointer; background:transparent; text-align:left; font-size:0.8rem;
-            color:var(--text-secondary); display:flex; align-items:center; gap:10px;
+            width:100%; padding:8px 10px; border:none; border-radius:var(--radius-sm);
+            cursor:pointer; background:transparent; text-align:left; font-size:0.75rem;
+            color:var(--text-secondary); display:flex; align-items:center; gap:8px;
             transition:all var(--transition-smooth); font-weight:500; font-family:var(--font);
         }
         .nav-btn:hover { background:var(--bg-hover); color:var(--text-primary); }
-        .nav-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .nav-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
         .nav-btn.act-blue { background:var(--rehema-soft); color:var(--rehema); font-weight:600; box-shadow:inset 3px 0 0 var(--rehema); }
         .nav-btn.act-mustard { background:var(--mustard-soft); color:var(--mustard); font-weight:600; box-shadow:inset 3px 0 0 var(--mustard); }
         .nav-btn.act-green { background:var(--collins-soft); color:var(--collins); font-weight:600; box-shadow:inset 3px 0 0 var(--collins); }
 
-        /* Logout button - clearly visible at bottom */
+        /* Logout – clearly visible at bottom */
         .sidebar-logout {
-            margin: 8px 10px 16px;
+            margin: 6px 10px 14px;
             padding: 10px 12px;
-            border: 1px solid rgba(255,80,80,0.3);
+            border: 1px solid rgba(255,80,80,0.4);
             border-radius: var(--radius-sm);
-            background: rgba(255,80,80,0.15);
+            background: rgba(255,80,80,0.2);
             color: #ff5e5e;
             font-weight: 600;
             font-size: 0.8rem;
@@ -210,11 +208,10 @@
             flex-shrink: 0;
         }
         .sidebar-logout:hover {
-            background: rgba(255,80,80,0.25);
+            background: rgba(255,80,80,0.3);
             border-color: #ff5e5e;
         }
 
-        /* Main content - will shift when sidebar opens on mobile */
         .main {
             flex:1;
             padding:20px 24px;
@@ -227,30 +224,27 @@
         @keyframes fadeSlideIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
         .section.active { display:block; }
 
-        /* ======== desktop styles ======== */
+        /* Desktop */
         @media (min-width: 769px) {
             .sidebar-toggle { display: none; }
             .header-right .logout-btn { display: flex; }
             .sidebar-logout { display: none; }
-            .sidebar {
-                width: 180px;
-                min-width: 180px;
-            }
+            .sidebar { width: 170px; min-width: 170px; }
         }
 
-        /* ======== mobile styles ======== */
+        /* Mobile */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 160px;                /* reduced width */
-                min-width: 160px;
+                width: 150px;               /* reduced */
+                min-width: 150px;
                 height: 100vh;
                 z-index: 100;
                 transform: translateX(-100%);
                 box-shadow: var(--shadow-lg);
-                background: rgba(12, 12, 17, 0.9); /* slightly more opaque for readability */
+                background: rgba(12, 12, 17, 0.5); /* ~50% transparency */
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -264,7 +258,7 @@
                 width: 100%;
             }
             .main.shifted {
-                margin-left: 160px;  /* same as sidebar width */
+                margin-left: 150px;          /* same as sidebar width */
             }
 
             .grid2 { grid-template-columns:1fr; }
@@ -277,9 +271,7 @@
     </style>
 </head>
 <body>
-
     <div class="jp-matrix" id="matrixContainer"></div>
-
     <div class="app">
         <div class="header">
             <div class="header-left">
@@ -288,9 +280,7 @@
                 <h1>Our Space</h1>
             </div>
             <div class="header-right">
-                <div class="user-badge" id="userBadge">
-                    <i class="fa-solid fa-user"></i> <span id="currentUserName">...</span>
-                </div>
+                <div class="user-badge" id="userBadge"><i class="fa-solid fa-user"></i> <span id="currentUserName">...</span></div>
                 <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>
@@ -318,12 +308,10 @@
                     <button class="nav-btn" data-section="letters" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
                     <button class="nav-btn" data-section="specialDays" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
                 </nav>
-                <!-- Logout at bottom - clearly visible -->
                 <a href="/logout" class="sidebar-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
             </div>
 
             <div class="main" id="mainContent">
-                <!-- All sections (same as before) -->
                 <div id="dashboard" class="section active">
                     <div class="welcome-card">
                         <h2>Welcome to Our Space ❤️</h2>
@@ -402,10 +390,8 @@
         const sidebarToggle = document.getElementById('sidebarToggle');
         const mainContent = document.getElementById('mainContent');
 
-        // Toggle sidebar (mobile) with push effect
         function toggleSidebar() {
             sidebar.classList.toggle('open');
-            // On mobile, shift main content
             if (window.innerWidth <= 768) {
                 mainContent.classList.toggle('shifted');
             }
@@ -420,18 +406,15 @@
 
         sidebarToggle.addEventListener('click', toggleSidebar);
 
-        // Close sidebar on Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && sidebar.classList.contains('open')) {
                 closeSidebar();
             }
         });
 
-        // Close sidebar when a nav item is clicked (mobile)
         function show(id, btn, color) {
-            // Close sidebar if it's open on mobile
             if (window.innerWidth <= 768) {
-                closeSidebar();
+                closeSidebar(); // closes on any nav click
             }
 
             document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
@@ -440,7 +423,7 @@
             if (btn) btn.classList.add("act-" + color);
         }
 
-        // ========== The rest of the JS (streak, carousel, etc.) unchanged ==========
+        // ---------- all the existing JS (streak, carousel, etc.) unchanged ----------
         async function loadCurrentUser() {
             try {
                 const res = await fetch('/api/current-user');
