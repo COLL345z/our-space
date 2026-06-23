@@ -127,7 +127,7 @@
         .letter-images { display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; }
         .letter-images img { width:100px; height:80px; object-fit:cover; border-radius:8px; flex-shrink:0; }
         .letter-footer { display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); }
-        .letter-actions { display:flex; gap:8px; }
+        .letter-actions { display:flex; gap:8px; flex-wrap:wrap; }
         .btn-mark-read {
             background:none; border:1px solid rgba(93,184,212,0.4); color: var(--rehema);
             padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.7rem; font-weight:600;
@@ -215,6 +215,10 @@
             background: var(--mustard-gradient); border:none; color:#1a1000;
             padding:12px; border-radius: var(--radius-lg); flex:1; font-weight:700; cursor:pointer;
         }
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         .fab {
             position:fixed; bottom:30px; right:20px; z-index:20;
@@ -224,6 +228,12 @@
             cursor:pointer; box-shadow:0 8px 24px var(--mustard-glow);
         }
         .empty-state { text-align:center; padding:40px; color:var(--text-muted); }
+        
+        .file-count {
+            font-size:0.75rem;
+            color:var(--text-muted);
+            margin-top:4px;
+        }
     </style>
 </head>
 <body>
@@ -275,7 +285,8 @@
         </div>
     </div>
 </div>
- <script>
+
+<script>
 const API_BASE = "https://our-space-htoh.onrender.com";
 const LETTERS_API = `${API_BASE}/api/letters`;
 const USER_API = `${API_BASE}/api/current-user`;
@@ -296,6 +307,17 @@ const userBadge = document.getElementById("currentUserName");
 const composeTitleEl = document.getElementById("composeTitle");
 const editDraftId = document.getElementById("editDraftId");
 const parentIdInput = document.getElementById("parentId");
+
+// File input change handler
+document.getElementById("letterImages").addEventListener("change", (e) => {
+    const files = e.target.files;
+    const count = document.getElementById("imageCount");
+    if (files.length > 0) {
+        count.textContent = `${files.length} image${files.length > 1 ? 's' : ''} selected`;
+    } else {
+        count.textContent = '';
+    }
+});
 
 function escapeHTML(str) {
     const div = document.createElement("div");
@@ -321,6 +343,7 @@ async function init() {
         loadAllData();
 
     } catch (e) {
+        console.error("Init error:", e);
         window.location.href = "/";
     }
 }
@@ -338,8 +361,13 @@ async function loadInbox() {
         const res = await fetch(`${LETTERS_API}/inbox`, {
             credentials: "include"
         });
-        allLetters.inbox = await res.json();
+        if (res.ok) {
+            allLetters.inbox = await res.json();
+        } else {
+            allLetters.inbox = [];
+        }
     } catch (e) {
+        console.error("Load inbox error:", e);
         allLetters.inbox = [];
     }
 }
@@ -349,8 +377,13 @@ async function loadSent() {
         const res = await fetch(`${LETTERS_API}/sent`, {
             credentials: "include"
         });
-        allLetters.sent = await res.json();
+        if (res.ok) {
+            allLetters.sent = await res.json();
+        } else {
+            allLetters.sent = [];
+        }
     } catch (e) {
+        console.error("Load sent error:", e);
         allLetters.sent = [];
     }
 }
@@ -360,8 +393,13 @@ async function loadDrafts() {
         const res = await fetch(`${LETTERS_API}/drafts`, {
             credentials: "include"
         });
-        allLetters.drafts = await res.json();
+        if (res.ok) {
+            allLetters.drafts = await res.json();
+        } else {
+            allLetters.drafts = [];
+        }
     } catch (e) {
+        console.error("Load drafts error:", e);
         allLetters.drafts = [];
     }
 }
@@ -380,8 +418,13 @@ async function toggleReplies(letterId, container) {
             const res = await fetch(`${LETTERS_API}/${letterId}/replies`, {
                 credentials: "include"
             });
-            repliesCache[letterId] = await res.json();
+            if (res.ok) {
+                repliesCache[letterId] = await res.json();
+            } else {
+                repliesCache[letterId] = [];
+            }
         } catch (e) {
+            console.error("Load replies error:", e);
             repliesCache[letterId] = [];
         }
     }
@@ -389,15 +432,15 @@ async function toggleReplies(letterId, container) {
     const replies = repliesCache[letterId];
 
     if (!replies.length) {
-        container.innerHTML = `<div style="padding:10px;">No replies yet.</div>`;
+        container.innerHTML = `<div style="padding:10px; color:var(--text-muted);">No replies yet.</div>`;
         return;
     }
 
     container.innerHTML = replies.map(r => `
         <div class="reply-card">
-            <div>${escapeHTML(r.title || "Reply")}</div>
-            <div>${escapeHTML(r.sender)}</div>
-            <div>${escapeHTML(r.content || "")}</div>
+            <div><strong>${escapeHTML(r.title || "Reply")}</strong></div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">From: ${escapeHTML(r.sender)}</div>
+            <div style="margin-top:6px;">${escapeHTML(r.content || "")}</div>
         </div>
     `).join("");
 }
@@ -406,7 +449,7 @@ async function toggleReplies(letterId, container) {
    RENDER
 ========================= */
 function renderLetters() {
-    let letters = allLetters[activeTab];
+    let letters = allLetters[activeTab] || [];
 
     if (!letters.length) {
         letterList.innerHTML = `<div class="empty-state">No ${activeTab} letters yet.</div>`;
@@ -415,29 +458,41 @@ function renderLetters() {
 
     letterList.innerHTML = letters.map(l => {
         const repliesId = `replies-${l.id}`;
+        const imageUrls = l.imagePaths || [];
+        const isRead = l.read || false;
 
         return `
         <div class="letter-card">
             <div class="letter-header">
-                <span>${escapeHTML(l.title)}</span>
-                <span>${l.date || ""}</span>
+                <span class="letter-title">${escapeHTML(l.title || 'Untitled')}</span>
+                <span class="letter-date">${l.date || ""}</span>
             </div>
-
-            <div>${escapeHTML(l.content)}</div>
-
-            <div class="letter-actions">
-                <button onclick="toggleReplies(${l.id}, document.getElementById('${repliesId}'))">
-                    Replies
-                </button>
-
-                ${activeTab === "inbox" ? `
-                    <button onclick="markRead(${l.id})">Mark read</button>
-                    <button onclick="openReply(${l.id})">Reply</button>
-                ` : ""}
-
-                <button onclick="deleteLetter(${l.id})">Delete</button>
+            <div class="letter-people">
+                ${activeTab === "inbox" ? `From: ${escapeHTML(l.sender)}` : `To: ${escapeHTML(l.receiver)}`}
+                ${isRead ? '<span class="read-badge">✓ Read</span>' : ''}
+                ${l.status === 'DRAFT' ? '<span class="draft-badge">📝 Draft</span>' : ''}
             </div>
-
+            <div class="letter-content">${escapeHTML(l.content || "")}</div>
+            ${imageUrls.length > 0 ? `
+                <div class="letter-images">
+                    ${imageUrls.map(url => `<img src="${escapeHTML(url)}" alt="Letter image" onerror="this.style.display='none'">`).join('')}
+                </div>
+            ` : ''}
+            <div class="letter-footer">
+                <span></span>
+                <div class="letter-actions">
+                    ${activeTab === "inbox" && !isRead ? `
+                        <button class="btn-mark-read" onclick="markRead(${l.id})">Mark read</button>
+                    ` : ''}
+                    ${activeTab === "inbox" ? `
+                        <button class="btn-reply" onclick="openReply(${l.id})">Reply</button>
+                    ` : ''}
+                    <button class="btn-delete" onclick="deleteLetter(${l.id})">Delete</button>
+                    <button onclick="toggleReplies(${l.id}, document.getElementById('${repliesId}'))" style="background:none; border:1px solid #555; color:var(--text-secondary); padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.7rem; font-weight:600;">
+                        Replies
+                    </button>
+                </div>
+            </div>
             <div id="${repliesId}"></div>
         </div>
         `;
@@ -449,6 +504,7 @@ function renderLetters() {
 ========================= */
 function openReply(parentId) {
     parentIdInput.value = parentId;
+    document.getElementById("composeTitle").textContent = "💌 Reply to Letter";
     composeOverlay.classList.add("active");
 }
 
@@ -456,42 +512,53 @@ function openReply(parentId) {
    SAVE LETTER
 ========================= */
 async function saveLetter(status = "SENT") {
-    const title = document.getElementById("letterTitle").value;
-    const content = document.getElementById("letterContent").value;
+    const title = document.getElementById("letterTitle").value.trim();
+    const content = document.getElementById("letterContent").value.trim();
     const date = document.getElementById("letterDate").value;
     const openDate = document.getElementById("letterOpenDate").value;
     const files = document.getElementById("letterImages").files;
     const parentId = parentIdInput.value;
 
-    // Determine receiver based on current user
-    const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
-
-    // Add validation
-    if (!title.trim() || !content.trim() || !date) {
-        alert("Please fill in all required fields (Title, Content, and Date)");
+    // Validation
+    if (!title) {
+        alert("Please enter a title");
         return;
     }
+    if (!content) {
+        alert("Please write your message");
+        return;
+    }
+    if (!date) {
+        alert("Please select a date");
+        return;
+    }
+
+    // Determine receiver
+    const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
-    // Remove sender from form data - it comes from session
-    // formData.append("sender", currentUser); // ❌ REMOVE THIS
     formData.append("receiver", receiver);
     formData.append("date", date);
-    formData.append("openDate", openDate || "");
+    if (openDate) formData.append("openDate", openDate);
     formData.append("status", status);
-
     if (parentId && parentId.trim()) {
         formData.append("parentId", parentId);
     }
 
+    // Append images
     for (let f of files) {
         formData.append("images", f);
     }
 
+    // Disable buttons
+    sendBtn.disabled = true;
+    saveDraftBtn.style.opacity = "0.5";
+    saveDraftBtn.style.cursor = "not-allowed";
+
     try {
-        const response = await fetch(`${LETTERS_API}`, {
+        const response = await fetch(LETTERS_API, {
             method: "POST",
             body: formData,
             credentials: "include"
@@ -508,34 +575,83 @@ async function saveLetter(status = "SENT") {
         document.getElementById("letterDate").value = "";
         document.getElementById("letterOpenDate").value = "";
         document.getElementById("letterImages").value = "";
+        document.getElementById("imageCount").textContent = "";
         parentIdInput.value = "";
         editDraftId.value = "";
+        document.getElementById("composeTitle").textContent = "💌 New Letter";
 
         composeOverlay.classList.remove("active");
         await loadAllData();
     } catch (error) {
         console.error("Error sending letter:", error);
         alert("Failed to send letter: " + error.message);
+    } finally {
+        sendBtn.disabled = false;
+        saveDraftBtn.style.opacity = "1";
+        saveDraftBtn.style.cursor = "pointer";
     }
 }
+
 /* =========================
    ACTIONS
 ========================= */
 window.markRead = async function(id) {
-    await fetch(`${LETTERS_API}/${id}/read`, {
-        method: "PUT",
-        credentials: "include"
-    });
-    loadAllData();
+    try {
+        await fetch(`${LETTERS_API}/${id}/read`, {
+            method: "PUT",
+            credentials: "include"
+        });
+        await loadAllData();
+    } catch (e) {
+        console.error("Mark read error:", e);
+    }
 };
 
 window.deleteLetter = async function(id) {
-    await fetch(`${LETTERS_API}/${id}`, {
-        method: "DELETE",
-        credentials: "include"
-    });
-    loadAllData();
+    if (!confirm("Delete this letter?")) return;
+    try {
+        await fetch(`${LETTERS_API}/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+        await loadAllData();
+    } catch (e) {
+        console.error("Delete error:", e);
+        alert("Failed to delete letter");
+    }
 };
+
+/* =========================
+   COMPOSE UI
+========================= */
+composeFab.addEventListener("click", () => {
+    document.getElementById("composeTitle").textContent = "💌 New Letter";
+    parentIdInput.value = "";
+    editDraftId.value = "";
+    composeOverlay.classList.add("active");
+});
+
+cancelCompose.addEventListener("click", () => {
+    composeOverlay.classList.remove("active");
+    // Reset form
+    document.getElementById("letterTitle").value = "";
+    document.getElementById("letterContent").value = "";
+    document.getElementById("letterDate").value = "";
+    document.getElementById("letterOpenDate").value = "";
+    document.getElementById("letterImages").value = "";
+    document.getElementById("imageCount").textContent = "";
+    parentIdInput.value = "";
+    editDraftId.value = "";
+    document.getElementById("composeTitle").textContent = "💌 New Letter";
+});
+
+sendBtn.addEventListener("click", () => {
+    saveLetter("SENT");
+});
+
+saveDraftBtn.addEventListener("click", () => {
+    saveLetter("DRAFT");
+});
 
 /* =========================
    TABS
@@ -549,10 +665,32 @@ tabBtns.forEach(btn => {
     });
 });
 
+// Close compose on escape
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && composeOverlay.classList.contains("active")) {
+        composeOverlay.classList.remove("active");
+    }
+});
+
+/* =========================
+   MATRIX BACKGROUND
+========================= */
+(function generateMatrix() {
+    const container = document.getElementById("matrixContainer");
+    if (!container) return;
+    const total = Math.floor((window.innerWidth * window.innerHeight) / (32 * 32));
+    const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
+    let html = '';
+    for (let i = 0; i < total; i++) {
+        html += `<span>${chars[Math.floor(Math.random() * chars.length)]}</span>`;
+    }
+    container.innerHTML = html;
+})();
+
 /* =========================
    INIT
 ========================= */
 init();
- </script>
+</script>
 </body>
 </html>
