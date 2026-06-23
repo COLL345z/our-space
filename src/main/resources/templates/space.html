@@ -156,13 +156,13 @@
             position:relative;
         }
 
-        /* Sidebar - semi-transparent, reduced width */
+        /* Sidebar - more transparent, bigger text */
         .sidebar {
             position: relative;
             width: 170px;
             min-width: 170px;
-            background: rgba(12, 12, 17, 0.55);
-            backdrop-filter: blur(10px);
+            background: rgba(12, 12, 17, 0.35);
+            backdrop-filter: blur(14px);
             border-right:1px solid var(--border-subtle);
             display:flex;
             flex-direction:column;
@@ -175,9 +175,9 @@
         .profile-card {
             margin:16px 14px 8px;
             border-radius:var(--radius-lg);
-            padding:14px;
+            padding:16px;
             border:1px solid var(--border-card);
-            background: rgba(24,24,32,0.5);
+            background: rgba(24,24,32,0.4);
             position:relative;
             overflow:hidden;
             transition:all var(--transition-smooth);
@@ -188,53 +188,94 @@
             background:linear-gradient(90deg, var(--rehema), var(--mustard), var(--collins));
             border-radius:3px 3px 0 0;
         }
-        .couple-label { font-size:0.6rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
-        .profile-names { display:flex; flex-direction:column; gap:2px; margin-top:6px; }
-        .rehema-name { color:var(--rehema); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
-        .collins-name { color:var(--collins); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
-        .name-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-        .color-dots { display:flex; gap:5px; margin-top:8px; }
-        .dot { width:8px; height:8px; border-radius:50%; transition:transform var(--transition-smooth); }
+        .couple-label { 
+            font-size:0.7rem; 
+            color:var(--text-muted); 
+            font-weight:700; 
+            text-transform:uppercase; 
+            letter-spacing:0.08em; 
+            margin-bottom:4px; 
+        }
+        .profile-names { 
+            display:flex; 
+            flex-direction:column; 
+            gap:4px; 
+            margin-top:8px; 
+        }
+        .rehema-name { 
+            color:var(--rehema); 
+            font-weight:700; 
+            font-size:0.95rem; 
+            display:flex; 
+            align-items:center; 
+            gap:8px; 
+        }
+        .collins-name { 
+            color:var(--collins); 
+            font-weight:700; 
+            font-size:0.95rem; 
+            display:flex; 
+            align-items:center; 
+            gap:8px; 
+        }
+        .name-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .color-dots { display:flex; gap:6px; margin-top:10px; }
+        .dot { width:10px; height:10px; border-radius:50%; transition:transform var(--transition-smooth); }
         .dot:hover { transform:scale(1.5); }
 
-        .nav { padding:6px 10px; flex:1; display:flex; flex-direction:column; gap:1px; }
+        .nav { padding:8px 10px; flex:1; display:flex; flex-direction:column; gap:2px; }
         .nav-btn {
-            width:100%; padding:8px 10px; border:none; border-radius:var(--radius-sm);
-            cursor:pointer; background:transparent; text-align:left; font-size:0.75rem;
-            color:var(--text-secondary); display:flex; align-items:center; gap:8px;
-            transition:all var(--transition-fast); font-weight:500; font-family:var(--font);
+            width:100%; 
+            padding:10px 12px; 
+            border:none; 
+            border-radius:var(--radius-sm);
+            cursor:pointer; 
+            background:transparent; 
+            text-align:left; 
+            font-size:0.85rem;
+            color:var(--text-secondary); 
+            display:flex; 
+            align-items:center; 
+            gap:10px;
+            transition:all var(--transition-fast); 
+            font-weight:500; 
+            font-family:var(--font);
         }
         .nav-btn:hover { background:var(--bg-hover); color:var(--text-primary); }
-        .nav-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .nav-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
         .nav-btn.act-blue { background:var(--rehema-soft); color:var(--rehema); font-weight:600; box-shadow:inset 3px 0 0 var(--rehema); }
         .nav-btn.act-mustard { background:var(--mustard-soft); color:var(--mustard); font-weight:600; box-shadow:inset 3px 0 0 var(--mustard); }
         .nav-btn.act-green { background:var(--collins-soft); color:var(--collins); font-weight:600; box-shadow:inset 3px 0 0 var(--collins); }
 
-        /* Logout at bottom - BRIGHT RED, CLEARLY VISIBLE */
+        /* Logout at bottom - BIGGER, BRIGHT RED, CLEARLY VISIBLE */
         .sidebar-logout {
-            margin: 6px 10px 16px;
-            padding: 10px 12px;
+            margin: 8px 10px 16px;
+            padding: 12px 14px;
             border: none;
             border-radius: var(--radius-sm);
             background: #e74c3c;
             color: #ffffff;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             transition: all var(--transition-fast);
             font-family: var(--font);
             text-decoration: none;
             flex-shrink: 0;
-            box-shadow: 0 2px 12px rgba(231, 76, 60, 0.4);
+            box-shadow: 0 2px 16px rgba(231, 76, 60, 0.5);
+            letter-spacing: 0.02em;
         }
         .sidebar-logout:hover {
             background: #c0392b;
-            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6);
-            transform: scale(1.02);
+            box-shadow: 0 4px 24px rgba(231, 76, 60, 0.7);
+            transform: scale(1.03);
+        }
+        .sidebar-logout i {
+            font-size: 1rem;
         }
 
         .main {
@@ -490,7 +531,7 @@
                 z-index: 100;
                 transform: translateX(-100%);
                 box-shadow: var(--shadow-lg);
-                background: rgba(12, 12, 17, 0.5);
+                background: rgba(12, 12, 17, 0.3);
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -568,7 +609,7 @@
                     <button class="nav-btn" data-section="letters" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
                     <button class="nav-btn" data-section="specialDays" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
                 </nav>
-                <!-- Logout at bottom - BRIGHT RED, CLEARLY VISIBLE -->
+                <!-- Logout at bottom - BIGGER, BRIGHT RED, CLEARLY VISIBLE -->
                 <a href="/logout" class="sidebar-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
             </div>
 
