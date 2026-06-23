@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Our Space</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,7 +124,6 @@
         }
         .header h1 { font-size:1.1rem; font-weight:700; letter-spacing:-0.02em; }
 
-        /* Sidebar toggle button */
         .sidebar-toggle {
             background: none;
             border: none;
@@ -132,7 +131,9 @@
             font-size: 1.2rem;
             cursor: pointer;
             padding: 6px;
+            transition: all var(--transition-fast);
         }
+        .sidebar-toggle:hover { color: var(--text-primary); }
 
         .header-right { display:flex; align-items:center; gap:10px; }
         .user-badge {
@@ -147,41 +148,59 @@
             gap:6px;
         }
 
-        .logout-btn {
-            background: rgba(255,80,80,0.1);
-            border: 1px solid rgba(255,80,80,0.3);
-            color: #ff5e5e;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all var(--transition-fast);
+        /* Sidebar overlay */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 99;
+            display: none;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
         }
-        .logout-btn:hover { background: rgba(255,80,80,0.2); }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-        .body { display:flex; flex:1; overflow:hidden; min-height:0; }
+        .body { display:flex; flex:1; overflow:hidden; min-height:0; position:relative; }
+
+        /* Sidebar - hidden by default on mobile, slides in */
         .sidebar {
-            width:240px; min-width:240px; background: var(--bg-primary);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            max-width: 80vw;
+            height: 100vh;
+            background: var(--bg-primary);
             border-right:1px solid var(--border-subtle);
-            display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto;
-            box-shadow:var(--shadow-md); z-index:10;
-            backdrop-filter:blur(4px);
-            transition: margin-left 0.3s ease, opacity 0.3s ease;
+            display:flex;
+            flex-direction:column;
+            flex-shrink:0;
+            overflow-y:auto;
+            box-shadow:var(--shadow-lg);
+            z-index:100;
+            backdrop-filter:blur(12px);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .sidebar.collapsed {
-            margin-left: -240px;
-            opacity: 0;
-            pointer-events: none;
+        .sidebar.open {
+            transform: translateX(0);
         }
+
         .profile-card {
-            margin:16px 14px 8px; border-radius:var(--radius-lg);
-            padding:16px; border:1px solid var(--border-card); background:var(--bg-card);
-            position:relative; overflow:hidden; transition:all var(--transition-smooth);
+            margin:16px 14px 8px;
+            border-radius:var(--radius-lg);
+            padding:16px;
+            border:1px solid var(--border-card);
+            background:var(--bg-card);
+            position:relative;
+            overflow:hidden;
+            transition:all var(--transition-smooth);
         }
         .profile-card:hover { border-color:#2e2e3c; box-shadow:var(--shadow-sm); }
         .profile-card::before {
@@ -211,10 +230,37 @@
         .nav-btn.act-mustard { background:var(--mustard-soft); color:var(--mustard); font-weight:600; box-shadow:inset 3px 0 0 var(--mustard); }
         .nav-btn.act-green { background:var(--collins-soft); color:var(--collins); font-weight:600; box-shadow:inset 3px 0 0 var(--collins); }
 
+        /* Logout button at bottom of sidebar */
+        .sidebar-logout {
+            margin: 8px 10px 16px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,80,80,0.3);
+            border-radius: var(--radius-sm);
+            background: rgba(255,80,80,0.08);
+            color: #ff5e5e;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all var(--transition-fast);
+            font-family: var(--font);
+            text-decoration: none;
+            width: calc(100% - 20px);
+        }
+        .sidebar-logout:hover {
+            background: rgba(255,80,80,0.15);
+            border-color: #ff5e5e;
+        }
+
         .main {
-            flex:1; padding:20px 24px; overflow-y:auto;
+            flex:1;
+            padding:20px 24px;
+            overflow-y:auto;
             background:transparent;
             position:relative;
+            transition: padding 0.3s ease;
         }
         .section { display:none; animation:fadeSlideIn 0.3s ease; }
         @keyframes fadeSlideIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
@@ -276,7 +322,6 @@
         }
         .streak-label { font-size:0.8rem; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em; }
 
-        /* Now Playing Widget */
         .now-playing-card {
             display: flex;
             align-items: center;
@@ -320,7 +365,6 @@
         }
         .np-btn:hover { background: rgba(255,255,255,0.1); }
 
-        /* Progress ring */
         .progress-ring-container {
             display: flex;
             flex-direction: column;
@@ -366,7 +410,6 @@
             margin-top: 2px;
         }
 
-        /* Song of the Day */
         .song-card {
             display: flex; align-items: center; gap: 14px; margin-top: 6px;
         }
@@ -407,13 +450,87 @@
         }
         .iframe-container iframe { display:block; width:100%; border:none; }
 
-        @media (max-width:768px) {
-            .sidebar { width:200px; min-width:200px; }
-            .sidebar.collapsed { margin-left: -200px; }
-            .grid2 { grid-template-columns:1fr; }
-            .main { padding:14px 12px; }
-            .welcome-card { padding:18px 20px; }
-            .welcome-card h2 { font-size:1.1rem; }
+        .carousel-container {
+            position:relative;
+            width:100%;
+            height:180px;
+            overflow:hidden;
+            border-radius:var(--radius-md);
+            background:var(--bg-input);
+            margin-top:10px;
+        }
+        .carousel-container img {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            transition:opacity 0.5s ease;
+            display:block;
+        }
+        .carousel-nav {
+            display:flex;
+            justify-content:center;
+            gap:6px;
+            margin-top:8px;
+        }
+        .carousel-nav .dot {
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            cursor:pointer;
+            transition:background 0.2s;
+            display:inline-block;
+        }
+
+        /* Desktop styles - sidebar visible by default */
+        @media (min-width: 769px) {
+            .sidebar {
+                position: relative;
+                transform: translateX(0);
+                width: 200px;
+                min-width: 200px;
+                height: auto;
+                max-width: none;
+                z-index: 10;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+            .sidebar-toggle {
+                display: none;
+            }
+            .sidebar-logout {
+                margin-top: auto;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                max-width: 80vw;
+                position: fixed;
+                transform: translateX(-100%);
+                height: 100vh;
+                z-index: 100;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                padding: 14px 12px;
+            }
+            .grid2 {
+                grid-template-columns: 1fr;
+            }
+            .welcome-card {
+                padding: 18px 20px;
+            }
+            .welcome-card h2 {
+                font-size: 1.1rem;
+            }
+            .header-right .logout-btn {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -421,10 +538,13 @@
 
     <div class="jp-matrix" id="matrixContainer"></div>
 
+    <!-- Sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="app">
         <div class="header">
             <div class="header-left">
-                <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
                 <div class="header-logo"><i class="fa-solid fa-heart"></i></div>
                 <h1>Our Space</h1>
             </div>
@@ -451,24 +571,25 @@
                     </div>
                 </div>
                 <nav class="nav">
-                    <button class="nav-btn act-blue" onclick="show('dashboard',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Dashboard</button>
-                    <button class="nav-btn" onclick="show('activities',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Activities</button>
-                    <button class="nav-btn" onclick="show('gallery',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Gallery</button>
-                    <button class="nav-btn" onclick="show('ourSongs',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Our Songs</button>
-                    <button class="nav-btn" onclick="show('memories',this,'green')"><span class="nav-dot" style="background:var(--collins)"></span>Memories</button>
-                    <button class="nav-btn" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
-                    <button class="nav-btn" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
+                    <button class="nav-btn act-blue" data-section="dashboard" onclick="show('dashboard',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Dashboard</button>
+                    <button class="nav-btn" data-section="activities" onclick="show('activities',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Activities</button>
+                    <button class="nav-btn" data-section="gallery" onclick="show('gallery',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Gallery</button>
+                    <button class="nav-btn" data-section="ourSongs" onclick="show('ourSongs',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Our Songs</button>
+                    <button class="nav-btn" data-section="memories" onclick="show('memories',this,'green')"><span class="nav-dot" style="background:var(--collins)"></span>Memories</button>
+                    <button class="nav-btn" data-section="letters" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
+                    <button class="nav-btn" data-section="specialDays" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
                 </nav>
+                <!-- Logout at bottom of sidebar -->
+                <a href="/logout" class="sidebar-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
             </div>
 
-            <div class="main">
+            <div class="main" id="mainContent">
                 <div id="dashboard" class="section active">
                     <div class="welcome-card">
                         <h2>Welcome to Our Space ❤️</h2>
                         <p>A private world for memories, plans, and everything between us.</p>
                     </div>
 
-                    <!-- Now Playing Widget with controls -->
                     <div class="now-playing-card" id="nowPlayingWidget" style="display:none;">
                         <div class="now-playing-pulse"><i class="fa-solid fa-music" style="color:#000;"></i></div>
                         <div class="now-playing-info">
@@ -483,7 +604,6 @@
                         </div>
                     </div>
 
-                    <!-- Love Streak (set date removed) -->
                     <div class="card">
                         <div class="section-title">⏳ Our Love Streak</div>
                         <div class="streak-body">
@@ -493,7 +613,6 @@
                         </div>
                     </div>
 
-                    <!-- Activity Progress Ring -->
                     <div class="card">
                         <div class="section-title">📊 Activity Progress</div>
                         <div class="progress-ring-container">
@@ -511,7 +630,6 @@
                         </div>
                     </div>
 
-                    <!-- Song of the Day -->
                     <div class="card">
                         <div class="section-title">🎵 Song of the Day</div>
                         <div id="songOfDayContent">
@@ -525,16 +643,13 @@
                         </div>
                     </div>
 
-                    <!-- Memory Carousel -->
                     <div class="card">
                         <div class="section-title">🖼️ Memory Carousel</div>
-                        <div class="carousel-container" id="carouselContainer" style="position:relative;width:100%;height:180px;overflow:hidden;border-radius:var(--radius-md);background:var(--bg-input);margin-top:10px;">
+                        <div class="carousel-container" id="carouselContainer">
                             <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.85rem;gap:10px;"><i class="fa-solid fa-image"></i> No photos yet</div>
                         </div>
-                        <div class="carousel-nav" id="carouselNav" style="display:flex;justify-content:center;gap:6px;margin-top:8px;"></div>
+                        <div class="carousel-nav" id="carouselNav"></div>
                     </div>
-
-                    <!-- Countdown removed -->
                 </div>
 
                 <div id="activities" class="section"><div class="iframe-container"><iframe src="/activities" width="100%" height="650px" frameborder="0"></iframe></div></div>
@@ -548,12 +663,41 @@
     </div>
 
     <script>
-        // Sidebar toggle
+        // Sidebar controls
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
         function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("collapsed");
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
         }
 
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        }
+
+        // Toggle button
+        sidebarToggle.addEventListener('click', toggleSidebar);
+
+        // Overlay click to close
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Close sidebar on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                closeSidebar();
+            }
+        });
+
+        // Modified show function - closes sidebar when dashboard is clicked
         function show(id, btn, color) {
+            // Close sidebar if it's the dashboard
+            if (id === 'dashboard') {
+                closeSidebar();
+            }
+            
             document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
             document.querySelectorAll(".nav-btn").forEach(b => b.className = "nav-btn");
             document.getElementById(id).classList.add("active");
@@ -583,7 +727,6 @@
         updateStreak();
         setInterval(updateStreak, 60000);
 
-        // Activity Progress Ring
         async function updateActivityRing() {
             try {
                 const res = await fetch('/api/activities');
@@ -609,7 +752,6 @@
         updateActivityRing();
         setInterval(updateActivityRing, 30000);
 
-        // Memory Carousel
         let carouselImages = [];
         let carouselIndex = 0;
         async function loadCarousel() {
@@ -633,13 +775,13 @@
             if (carouselImages.length === 0) return;
             const img = document.createElement('img');
             img.src = carouselImages[carouselIndex].fileUrl;
-            img.style.cssText = 'width:100%;height:100%;object-fit:cover;transition:opacity 0.5s ease;display:block;';
             container.innerHTML = '';
             container.appendChild(img);
             nav.innerHTML = '';
             for (let i = 0; i < carouselImages.length; i++) {
                 const dot = document.createElement('div');
-                dot.style.cssText = `width:8px;height:8px;border-radius:50%;background:${i===carouselIndex?'var(--mustard)':'var(--border-card)'};cursor:pointer;transition:background 0.2s;box-shadow:${i===carouselIndex?'0 0 8px var(--mustard-glow)':'none'};`;
+                dot.className = 'dot';
+                dot.style.cssText = `background:${i===carouselIndex?'var(--mustard)':'var(--border-card)'};box-shadow:${i===carouselIndex?'0 0 8px var(--mustard-glow)':'none'};`;
                 dot.addEventListener('click', () => { carouselIndex = i; renderCarousel(); });
                 nav.appendChild(dot);
             }
@@ -653,7 +795,6 @@
         loadCarousel();
         setInterval(nextCarousel, 6000);
 
-        // Song of the Day
         window.currentSongOfDay = null;
         async function loadSongOfDay() {
             const songContainer = document.getElementById("songOfDayContent");
@@ -695,6 +836,8 @@
             if (iframe && window.currentSongOfDay) {
                 iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, '*');
             }
+            // Close sidebar when navigating
+            closeSidebar();
         }
 
         function escapeHTML(str) {
@@ -704,7 +847,6 @@
         }
         loadSongOfDay();
 
-        // Send a message to the songs iframe
         function sendToSongs(msg) {
             const iframe = document.getElementById('songIframe');
             if (iframe) {
@@ -712,7 +854,6 @@
             }
         }
 
-        // Now Playing Widget – updates from songs page messages
         window.addEventListener('message', function(e) {
             if (e.data && e.data.action === 'nowPlaying') {
                 const widget = document.getElementById('nowPlayingWidget');
@@ -720,7 +861,6 @@
                 document.getElementById('npWidgetTitle').textContent = e.data.title || 'Untitled';
                 document.getElementById('npWidgetArtist').textContent = e.data.artist || '';
                 document.getElementById('npWidgetStatus').textContent = e.data.playing ? '🎶 Now playing' : '⏸ Paused';
-                // Update play/pause icon
                 const playBtn = document.getElementById('npPlayBtn');
                 if (playBtn) {
                     playBtn.innerHTML = e.data.playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
@@ -728,7 +868,6 @@
             }
         });
 
-        // Matrix background
         (function generateMatrix() {
             const container = document.getElementById('matrixContainer');
             const cols = Math.floor(window.innerWidth / 40);
