@@ -156,27 +156,28 @@
             position:relative;
         }
 
-        /* Sidebar - clear, no blur */
+        /* Sidebar - semi-transparent, reduced width */
         .sidebar {
             position: relative;
-            width: 200px;
-            min-width: 200px;
-            background: var(--bg-primary);
+            width: 170px;
+            min-width: 170px;
+            background: rgba(12, 12, 17, 0.55);
+            backdrop-filter: blur(10px);
             border-right:1px solid var(--border-subtle);
             display:flex;
             flex-direction:column;
             flex-shrink:0;
             overflow-y:auto;
             z-index:10;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease, margin 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
         }
 
         .profile-card {
             margin:16px 14px 8px;
             border-radius:var(--radius-lg);
-            padding:16px;
+            padding:14px;
             border:1px solid var(--border-card);
-            background:var(--bg-card);
+            background: rgba(24,24,32,0.5);
             position:relative;
             overflow:hidden;
             transition:all var(--transition-smooth);
@@ -187,50 +188,53 @@
             background:linear-gradient(90deg, var(--rehema), var(--mustard), var(--collins));
             border-radius:3px 3px 0 0;
         }
-        .couple-label { font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
-        .profile-names { display:flex; flex-direction:column; gap:3px; margin-top:8px; }
-        .rehema-name { color:var(--rehema); font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px; }
-        .collins-name { color:var(--collins); font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px; }
-        .name-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .color-dots { display:flex; gap:6px; margin-top:10px; }
-        .dot { width:10px; height:10px; border-radius:50%; transition:transform var(--transition-smooth); }
+        .couple-label { font-size:0.6rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
+        .profile-names { display:flex; flex-direction:column; gap:2px; margin-top:6px; }
+        .rehema-name { color:var(--rehema); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
+        .collins-name { color:var(--collins); font-weight:700; font-size:0.8rem; display:flex; align-items:center; gap:6px; }
+        .name-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .color-dots { display:flex; gap:5px; margin-top:8px; }
+        .dot { width:8px; height:8px; border-radius:50%; transition:transform var(--transition-smooth); }
         .dot:hover { transform:scale(1.5); }
 
-        .nav { padding:8px 10px; flex:1; display:flex; flex-direction:column; gap:1px; }
+        .nav { padding:6px 10px; flex:1; display:flex; flex-direction:column; gap:1px; }
         .nav-btn {
-            width:100%; padding:10px 12px; border:none; border-radius:var(--radius-sm);
-            cursor:pointer; background:transparent; text-align:left; font-size:0.8rem;
-            color:var(--text-secondary); display:flex; align-items:center; gap:10px;
+            width:100%; padding:8px 10px; border:none; border-radius:var(--radius-sm);
+            cursor:pointer; background:transparent; text-align:left; font-size:0.75rem;
+            color:var(--text-secondary); display:flex; align-items:center; gap:8px;
             transition:all var(--transition-fast); font-weight:500; font-family:var(--font);
         }
         .nav-btn:hover { background:var(--bg-hover); color:var(--text-primary); }
-        .nav-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .nav-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
         .nav-btn.act-blue { background:var(--rehema-soft); color:var(--rehema); font-weight:600; box-shadow:inset 3px 0 0 var(--rehema); }
         .nav-btn.act-mustard { background:var(--mustard-soft); color:var(--mustard); font-weight:600; box-shadow:inset 3px 0 0 var(--mustard); }
         .nav-btn.act-green { background:var(--collins-soft); color:var(--collins); font-weight:600; box-shadow:inset 3px 0 0 var(--collins); }
 
-        /* Logout at bottom of sidebar - clearly visible */
+        /* Logout at bottom - BRIGHT RED, CLEARLY VISIBLE */
         .sidebar-logout {
-            margin: 8px 10px 16px;
+            margin: 6px 10px 16px;
             padding: 10px 12px;
-            border: 1px solid rgba(255,80,80,0.3);
+            border: none;
             border-radius: var(--radius-sm);
-            background: rgba(255,80,80,0.1);
-            color: #ff5e5e;
-            font-weight: 600;
+            background: #e74c3c;
+            color: #ffffff;
+            font-weight: 700;
             font-size: 0.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            gap: 8px;
             transition: all var(--transition-fast);
             font-family: var(--font);
             text-decoration: none;
             flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(231, 76, 60, 0.4);
         }
         .sidebar-logout:hover {
-            background: rgba(255,80,80,0.2);
-            border-color: #ff5e5e;
+            background: #c0392b;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6);
+            transform: scale(1.02);
         }
 
         .main {
@@ -239,7 +243,7 @@
             overflow-y:auto;
             background:transparent;
             position:relative;
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .section { display:none; animation:fadeSlideIn 0.3s ease; }
         @keyframes fadeSlideIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
@@ -468,6 +472,10 @@
             .sidebar-logout {
                 display: none;
             }
+            .sidebar {
+                width: 170px;
+                min-width: 170px;
+            }
         }
 
         /* Mobile styles */
@@ -476,20 +484,27 @@
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 200px;
-                max-width: 80vw;
+                width: 150px;
+                min-width: 150px;
                 height: 100vh;
                 z-index: 100;
                 transform: translateX(-100%);
                 box-shadow: var(--shadow-lg);
+                background: rgba(12, 12, 17, 0.5);
             }
             .sidebar.open {
                 transform: translateX(0);
             }
             
+            /* Push main content to the right when sidebar is open */
             .main {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
                 padding: 14px 12px;
                 width: 100%;
+            }
+            .main.shifted {
+                margin-left: 150px;
             }
             
             .grid2 {
@@ -553,7 +568,7 @@
                     <button class="nav-btn" data-section="letters" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
                     <button class="nav-btn" data-section="specialDays" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
                 </nav>
-                <!-- Logout at bottom of sidebar - clearly visible -->
+                <!-- Logout at bottom - BRIGHT RED, CLEARLY VISIBLE -->
                 <a href="/logout" class="sidebar-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
             </div>
 
@@ -641,13 +656,21 @@
         // Sidebar controls
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
+        const mainContent = document.getElementById('mainContent');
 
         function toggleSidebar() {
             sidebar.classList.toggle('open');
+            // On mobile, shift main content
+            if (window.innerWidth <= 768) {
+                mainContent.classList.toggle('shifted');
+            }
         }
 
         function closeSidebar() {
             sidebar.classList.remove('open');
+            if (window.innerWidth <= 768) {
+                mainContent.classList.remove('shifted');
+            }
         }
 
         // Toggle button
@@ -655,208 +678,4 @@
 
         // Close sidebar on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-                closeSidebar();
-            }
-        });
-
-        // Modified show function - closes sidebar when dashboard is clicked
-        function show(id, btn, color) {
-            // Close sidebar if it's the dashboard
-            if (id === 'dashboard') {
-                closeSidebar();
-            } else {
-                // Close sidebar on mobile when any nav item is clicked
-                if (window.innerWidth <= 768) {
-                    closeSidebar();
-                }
-            }
-            
-            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-            document.querySelectorAll(".nav-btn").forEach(b => b.className = "nav-btn");
-            document.getElementById(id).classList.add("active");
-            if (btn) btn.classList.add("act-" + color);
-        }
-
-        async function loadCurrentUser() {
-            try {
-                const res = await fetch('/api/current-user');
-                if (!res.ok) throw new Error('Not logged in');
-                const user = await res.text();
-                document.getElementById("currentUserName").textContent = user;
-                const badge = document.getElementById("userBadge");
-                badge.style.color = user === 'Rehema' ? 'var(--rehema)' : 'var(--collins)';
-            } catch(e) { window.location.href = "/"; }
-        }
-        loadCurrentUser();
-
-        let streakDate = new Date("2026-01-18");
-        function updateStreak() {
-            const now = new Date();
-            const diffTime = now - streakDate;
-            const days = Math.floor(diffTime / (1000*60*60*24));
-            document.getElementById("streakDays").textContent = days;
-            document.getElementById("streakSub").textContent = "That's " + (days*24).toLocaleString() + " hours of love!";
-        }
-        updateStreak();
-        setInterval(updateStreak, 60000);
-
-        async function updateActivityRing() {
-            try {
-                const res = await fetch('/api/activities');
-                if (!res.ok) throw new Error('Failed');
-                const acts = await res.json();
-                const planned = acts.filter(a => a.status === 'PLANNED').length;
-                const completed = acts.filter(a => a.status === 'COMPLETED').length;
-                const total = planned + completed;
-                const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-                const circumference = 327;
-                const offset = circumference - (pct / 100) * circumference;
-                document.getElementById("progressCircle").style.strokeDashoffset = offset;
-                document.getElementById("progressPercent").textContent = pct + "%";
-                document.getElementById("progressDetail").textContent = `${completed} of ${total} adventures done`;
-                const circle = document.getElementById("progressCircle");
-                if (pct === 100) circle.style.stroke = 'var(--collins)';
-                else if (pct >= 50) circle.style.stroke = 'var(--mustard)';
-                else circle.style.stroke = 'var(--rehema)';
-            } catch(e) {
-                document.getElementById("progressDetail").textContent = "No activities yet";
-            }
-        }
-        updateActivityRing();
-        setInterval(updateActivityRing, 30000);
-
-        let carouselImages = [];
-        let carouselIndex = 0;
-        async function loadCarousel() {
-            const container = document.getElementById("carouselContainer");
-            const nav = document.getElementById("carouselNav");
-            try {
-                const res = await fetch('/api/gallery');
-                const items = await res.json();
-                carouselImages = items.filter(item => item.type === 'IMAGE' && item.fileUrl);
-            } catch (e) { carouselImages = []; }
-            if (carouselImages.length === 0) {
-                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.85rem;gap:10px;"><i class="fa-solid fa-image"></i> No photos yet</div>';
-                nav.innerHTML = '';
-                return;
-            }
-            renderCarousel();
-        }
-        function renderCarousel() {
-            const container = document.getElementById("carouselContainer");
-            const nav = document.getElementById("carouselNav");
-            if (carouselImages.length === 0) return;
-            const img = document.createElement('img');
-            img.src = carouselImages[carouselIndex].fileUrl;
-            container.innerHTML = '';
-            container.appendChild(img);
-            nav.innerHTML = '';
-            for (let i = 0; i < carouselImages.length; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                dot.style.cssText = `background:${i===carouselIndex?'var(--mustard)':'var(--border-card)'};box-shadow:${i===carouselIndex?'0 0 8px var(--mustard-glow)':'none'};`;
-                dot.addEventListener('click', () => { carouselIndex = i; renderCarousel(); });
-                nav.appendChild(dot);
-            }
-        }
-        function nextCarousel() {
-            if (carouselImages.length > 0) {
-                carouselIndex = (carouselIndex + 1) % carouselImages.length;
-                renderCarousel();
-            }
-        }
-        loadCarousel();
-        setInterval(nextCarousel, 6000);
-
-        window.currentSongOfDay = null;
-        async function loadSongOfDay() {
-            const songContainer = document.getElementById("songOfDayContent");
-            try {
-                const res = await fetch('/api/songs');
-                if (!res.ok) throw new Error('No songs');
-                const apiSongs = await res.json();
-                if (apiSongs.length === 0) throw new Error('Empty');
-                const randomSong = apiSongs[Math.floor(Math.random() * apiSongs.length)];
-                window.currentSongOfDay = randomSong;
-                songContainer.innerHTML = `
-                    <div class="song-card">
-                        <div class="song-icon"><i class="fa-solid fa-play"></i></div>
-                        <div class="song-info">
-                            <div class="song-title">${escapeHTML(randomSong.title || 'Untitled')}</div>
-                            <div class="song-artist">${escapeHTML(randomSong.artist || 'Unknown')}</div>
-                        </div>
-                        <button class="song-listen" onclick="playCurrentSongOfDay()"><i class="fa-solid fa-headphones"></i> Listen</button>
-                    </div>`;
-            } catch (e) {
-                songContainer.innerHTML = `
-                    <div class="song-card">
-                        <div class="song-icon"><i class="fa-solid fa-music"></i></div>
-                        <div class="song-info">
-                            <div class="song-title">No songs yet</div>
-                            <div class="song-artist">Add some in Our Songs</div>
-                        </div>
-                    </div>`;
-            }
-        }
-
-        function playCurrentSongOfDay() {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.className = 'nav-btn');
-            document.getElementById('ourSongs').classList.add('active');
-            const songsBtn = document.querySelector('[data-section="ourSongs"]');
-            if (songsBtn) songsBtn.classList.add('act-mustard');
-            const iframe = document.getElementById('songIframe');
-            if (iframe && window.currentSongOfDay) {
-                iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, '*');
-            }
-            // Close sidebar when navigating
-            if (window.innerWidth <= 768) {
-                closeSidebar();
-            }
-        }
-
-        function escapeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-        loadSongOfDay();
-
-        function sendToSongs(msg) {
-            const iframe = document.getElementById('songIframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage(msg, '*');
-            }
-        }
-
-        window.addEventListener('message', function(e) {
-            if (e.data && e.data.action === 'nowPlaying') {
-                const widget = document.getElementById('nowPlayingWidget');
-                widget.style.display = 'flex';
-                document.getElementById('npWidgetTitle').textContent = e.data.title || 'Untitled';
-                document.getElementById('npWidgetArtist').textContent = e.data.artist || '';
-                document.getElementById('npWidgetStatus').textContent = e.data.playing ? '🎶 Now playing' : '⏸ Paused';
-                const playBtn = document.getElementById('npPlayBtn');
-                if (playBtn) {
-                    playBtn.innerHTML = e.data.playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
-                }
-            }
-        });
-
-        (function generateMatrix() {
-            const container = document.getElementById('matrixContainer');
-            const cols = Math.floor(window.innerWidth / 40);
-            const rows = Math.floor(window.innerHeight / 40);
-            const total = cols * rows;
-            const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
-            let html = '';
-            for (let i = 0; i < total; i++) {
-                const char = chars[Math.floor(Math.random() * chars.length)];
-                html += `<span>${char}</span>`;
-            }
-            container.innerHTML = html;
-        })();
-    </script>
-</body>
-</html>
+            if (e.key === 'Escape' && sidebar.classList.contains
