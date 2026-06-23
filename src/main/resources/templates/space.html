@@ -678,4 +678,203 @@
 
         // Close sidebar on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains
+            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                closeSidebar();
+            }
+        });
+
+        // Modified show function - closes sidebar when dashboard is clicked
+        function show(id, btn, color) {
+            // Close sidebar on mobile when any nav item is clicked
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+            
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            document.querySelectorAll(".nav-btn").forEach(b => b.className = "nav-btn");
+            document.getElementById(id).classList.add("active");
+            if (btn) btn.classList.add("act-" + color);
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const res = await fetch('/api/current-user');
+                if (!res.ok) throw new Error('Not logged in');
+                const user = await res.text();
+                document.getElementById("currentUserName").textContent = user;
+                const badge = document.getElementById("userBadge");
+                badge.style.color = user === 'Rehema' ? 'var(--rehema)' : 'var(--collins)';
+            } catch(e) { window.location.href = "/"; }
+        }
+        loadCurrentUser();
+
+        let streakDate = new Date("2026-01-18");
+        function updateStreak() {
+            const now = new Date();
+            const diffTime = now - streakDate;
+            const days = Math.floor(diffTime / (1000*60*60*24));
+            document.getElementById("streakDays").textContent = days;
+            document.getElementById("streakSub").textContent = "That's " + (days*24).toLocaleString() + " hours of love!";
+        }
+        updateStreak();
+        setInterval(updateStreak, 60000);
+
+        async function updateActivityRing() {
+            try {
+                const res = await fetch('/api/activities');
+                if (!res.ok) throw new Error('Failed');
+                const acts = await res.json();
+                const planned = acts.filter(a => a.status === 'PLANNED').length;
+                const completed = acts.filter(a => a.status === 'COMPLETED').length;
+                const total = planned + completed;
+                const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const circumference = 327;
+                const offset = circumference - (pct / 100) * circumference;
+                document.getElementById("progressCircle").style.strokeDashoffset = offset;
+                document.getElementById("progressPercent").textContent = pct + "%";
+                document.getElementById("progressDetail").textContent = `${completed} of ${total} adventures done`;
+                const circle = document.getElementById("progressCircle");
+                if (pct === 100) circle.style.stroke = 'var(--collins)';
+                else if (pct >= 50) circle.style.stroke = 'var(--mustard)';
+                else circle.style.stroke = 'var(--rehema)';
+            } catch(e) {
+                document.getElementById("progressDetail").textContent = "No activities yet";
+            }
+        }
+        updateActivityRing();
+        setInterval(updateActivityRing, 30000);
+
+        let carouselImages = [];
+        let carouselIndex = 0;
+        async function loadCarousel() {
+            const container = document.getElementById("carouselContainer");
+            const nav = document.getElementById("carouselNav");
+            try {
+                const res = await fetch('/api/gallery');
+                const items = await res.json();
+                carouselImages = items.filter(item => item.type === 'IMAGE' && item.fileUrl);
+            } catch (e) { carouselImages = []; }
+            if (carouselImages.length === 0) {
+                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.85rem;gap:10px;"><i class="fa-solid fa-image"></i> No photos yet</div>';
+                nav.innerHTML = '';
+                return;
+            }
+            renderCarousel();
+        }
+        function renderCarousel() {
+            const container = document.getElementById("carouselContainer");
+            const nav = document.getElementById("carouselNav");
+            if (carouselImages.length === 0) return;
+            const img = document.createElement('img');
+            img.src = carouselImages[carouselIndex].fileUrl;
+            container.innerHTML = '';
+            container.appendChild(img);
+            nav.innerHTML = '';
+            for (let i = 0; i < carouselImages.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.cssText = `background:${i===carouselIndex?'var(--mustard)':'var(--border-card)'};box-shadow:${i===carouselIndex?'0 0 8px var(--mustard-glow)':'none'};`;
+                dot.addEventListener('click', () => { carouselIndex = i; renderCarousel(); });
+                nav.appendChild(dot);
+            }
+        }
+        function nextCarousel() {
+            if (carouselImages.length > 0) {
+                carouselIndex = (carouselIndex + 1) % carouselImages.length;
+                renderCarousel();
+            }
+        }
+        loadCarousel();
+        setInterval(nextCarousel, 6000);
+
+        window.currentSongOfDay = null;
+        async function loadSongOfDay() {
+            const songContainer = document.getElementById("songOfDayContent");
+            try {
+                const res = await fetch('/api/songs');
+                if (!res.ok) throw new Error('No songs');
+                const apiSongs = await res.json();
+                if (apiSongs.length === 0) throw new Error('Empty');
+                const randomSong = apiSongs[Math.floor(Math.random() * apiSongs.length)];
+                window.currentSongOfDay = randomSong;
+                songContainer.innerHTML = `
+                    <div class="song-card">
+                        <div class="song-icon"><i class="fa-solid fa-play"></i></div>
+                        <div class="song-info">
+                            <div class="song-title">${escapeHTML(randomSong.title || 'Untitled')}</div>
+                            <div class="song-artist">${escapeHTML(randomSong.artist || 'Unknown')}</div>
+                        </div>
+                        <button class="song-listen" onclick="playCurrentSongOfDay()"><i class="fa-solid fa-headphones"></i> Listen</button>
+                    </div>`;
+            } catch (e) {
+                songContainer.innerHTML = `
+                    <div class="song-card">
+                        <div class="song-icon"><i class="fa-solid fa-music"></i></div>
+                        <div class="song-info">
+                            <div class="song-title">No songs yet</div>
+                            <div class="song-artist">Add some in Our Songs</div>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function playCurrentSongOfDay() {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.className = 'nav-btn');
+            document.getElementById('ourSongs').classList.add('active');
+            const songsBtn = document.querySelector('[data-section="ourSongs"]');
+            if (songsBtn) songsBtn.classList.add('act-mustard');
+            const iframe = document.getElementById('songIframe');
+            if (iframe && window.currentSongOfDay) {
+                iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, '*');
+            }
+            // Close sidebar when navigating
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        loadSongOfDay();
+
+        function sendToSongs(msg) {
+            const iframe = document.getElementById('songIframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage(msg, '*');
+            }
+        }
+
+        window.addEventListener('message', function(e) {
+            if (e.data && e.data.action === 'nowPlaying') {
+                const widget = document.getElementById('nowPlayingWidget');
+                widget.style.display = 'flex';
+                document.getElementById('npWidgetTitle').textContent = e.data.title || 'Untitled';
+                document.getElementById('npWidgetArtist').textContent = e.data.artist || '';
+                document.getElementById('npWidgetStatus').textContent = e.data.playing ? '🎶 Now playing' : '⏸ Paused';
+                const playBtn = document.getElementById('npPlayBtn');
+                if (playBtn) {
+                    playBtn.innerHTML = e.data.playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+                }
+            }
+        });
+
+        (function generateMatrix() {
+            const container = document.getElementById('matrixContainer');
+            const cols = Math.floor(window.innerWidth / 40);
+            const rows = Math.floor(window.innerHeight / 40);
+            const total = cols * rows;
+            const chars = ['0','1','♥','✦','♦','♡','·',':','.',',','~'];
+            let html = '';
+            for (let i = 0; i < total; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                html += `<span>${char}</span>`;
+            }
+            container.innerHTML = html;
+        })();
+    </script>
+</body>
+</html>
