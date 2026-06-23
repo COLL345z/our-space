@@ -11,7 +11,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/gallery")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class GalleryController {
 
     private final GalleryRepository repo;

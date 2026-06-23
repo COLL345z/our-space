@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/special-days")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class SpecialDayController {
 
     private final SpecialDayRepository repo;

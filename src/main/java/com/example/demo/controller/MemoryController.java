@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/memories")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 public class MemoryController {
 
     @Autowired

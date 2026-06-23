@@ -12,7 +12,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/letters")
-@CrossOrigin(origins = "*", allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowCredentials = "true")
 public class LetterController {
 
     @Autowired

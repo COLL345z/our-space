@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/activities")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class ActivityController {
 
     @Autowired
