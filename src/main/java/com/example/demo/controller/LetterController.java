@@ -4,19 +4,31 @@ import com.example.demo.entity.Letter;
 import com.example.demo.repository.LetterRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.nio.file.*;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/letters")
-// @CrossOrigin(origins = "*", allowCredentials = "true")
+
 public class LetterController {
 
     @Autowired
     private LetterRepository letterRepository;
+
+    // ── GET CURRENT USER ──
+    @GetMapping("/api/current-user")
+    public ResponseEntity<String> getCurrentUser(HttpSession session) {
+        String user = (String) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(401).body("Not logged in");
+        }
+        return ResponseEntity.ok(user);
+    }
 
     // ── INBOX (SESSION BASED) ──
     @GetMapping("/inbox")
@@ -49,7 +61,7 @@ public class LetterController {
     }
 
     // ── CREATE LETTER ──
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public Letter createLetter(
             @RequestParam String title,
             @RequestParam String content,
@@ -78,15 +90,24 @@ public class LetterController {
             letter.setParentId(parentId);
         }
 
-        // images (unchanged)
+        // Handle images
         if (images != null && images.length > 0) {
             List<String> urls = new ArrayList<>();
+            String uploadDir = System.getProperty("user.dir") + "/uploads/letters/";
+            Path uploadPath = Paths.get(uploadDir);
+            Files.createDirectories(uploadPath);
+
             for (MultipartFile file : images) {
                 String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get("uploads/letters/" + filename);
-                Files.createDirectories(path.getParent());
+                Path path = uploadPath.resolve(filename);
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                urls.add("/uploads/letters/" + filename);
+
+                // Create URL for the image
+                String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/uploads/letters/")
+                        .path(filename)
+                        .toUriString();
+                urls.add(fileUrl);
             }
             letter.setImagePaths(urls);
         }

@@ -576,71 +576,87 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
         document.body.style.overflow = "";
     };
 
-    // Upload multiple images
-    async function uploadImages(files) {
-        const formData = new FormData();
-        for (let file of files) {
-            formData.append("files", file);
-        }
+   // Update the uploadImages function to handle the new response format
+async function uploadImages(files) {
+    const formData = new FormData();
+    for (let file of files) {
+        formData.append("files", file); // Note: 'files' not 'file'
+    }
+    
+    try {
         const res = await fetch(`${API}/upload`, {
             method: "POST",
-            body: formData
+            body: formData,
+            // Remove Content-Type header - let browser set it for FormData
         });
-        if (!res.ok) throw new Error("Upload failed");
-        return await res.json(); // array of URLs
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || "Upload failed");
+        }
+        
+        const urls = await res.json();
+        return urls; // Array of URLs
+    } catch (error) {
+        console.error("Upload error:", error);
+        throw error;
+    }
+}
+
+// Update btnSave click handler
+btnSave.addEventListener("click", async () => {
+    const title = document.getElementById("titleInput").value.trim();
+    const fileInput = document.getElementById("imageFiles");
+    const files = fileInput.files;
+
+    if (!title && files.length === 0) {
+        alert("Please enter a title or choose at least one image.");
+        return;
     }
 
-    btnSave.addEventListener("click", async () => {
-        const title = document.getElementById("titleInput").value.trim();
-        const fileInput = document.getElementById("imageFiles");
-        const files = fileInput.files;
+    btnSave.disabled = true;
+    btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-        if (!title && files.length === 0) {
-            alert("Please enter a title or choose at least one image.");
-            return;
-        }
-
-        btnSave.disabled = true;
-        btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-
-        let imageUrls = [];
+    let imageUrls = [];
+    if (files.length > 0) {
         try {
-            if (files.length > 0) {
-                imageUrls = await uploadImages(files);
-            }
+            imageUrls = await uploadImages(files);
         } catch (e) {
-            alert("Image upload failed. Please try again.");
+            alert("Image upload failed: " + e.message);
             btnSave.disabled = false;
             btnSave.innerHTML = "Save memory";
             return;
         }
+    }
 
-        const memory = {
-            title: title || "Untitled",
-            category: document.getElementById("categoryInput").value,
-            description: document.getElementById("descInput").value.trim(),
-            uploadedBy: document.getElementById("uploadedByInput").value.trim() || "Anonymous",
-            imageUrls: imageUrls, // send as array
-            dateCreated: new Date().toISOString()
-        };
+    const memory = {
+        title: title || "Untitled",
+        category: document.getElementById("categoryInput").value,
+        description: document.getElementById("descInput").value.trim(),
+        uploadedBy: document.getElementById("uploadedByInput").value.trim() || "Anonymous",
+        imageUrls: imageUrls,
+        dateCreated: new Date().toISOString().split('T')[0] // Send only date part
+    };
 
-        try {
-            const res = await fetch(API, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(memory)
-            });
-            if (!res.ok) throw new Error("Save failed");
-            closeForm();
-            loadMemories();
-        } catch (e) {
-            alert("Could not save memory. Check your connection.");
-        } finally {
-            btnSave.disabled = false;
-            btnSave.innerHTML = "Save memory";
+    try {
+        const res = await fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(memory)
+        });
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || "Save failed");
         }
-    });
-
+        closeForm();
+        loadMemories();
+    } catch (e) {
+        alert("Could not save memory: " + e.message);
+    } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = "Save memory";
+    }
+});
     async function deleteMemory(id) {
         if (!confirm("Delete this memory?")) return;
         try {

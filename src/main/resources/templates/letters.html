@@ -463,33 +463,61 @@ async function saveLetter(status = "SENT") {
     const files = document.getElementById("letterImages").files;
     const parentId = parentIdInput.value;
 
+    // Determine receiver based on current user
     const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
+
+    // Add validation
+    if (!title.trim() || !content.trim() || !date) {
+        alert("Please fill in all required fields (Title, Content, and Date)");
+        return;
+    }
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
-    formData.append("sender", currentUser);
+    // Remove sender from form data - it comes from session
+    // formData.append("sender", currentUser); // ❌ REMOVE THIS
     formData.append("receiver", receiver);
     formData.append("date", date);
-    formData.append("openDate", openDate);
+    formData.append("openDate", openDate || "");
     formData.append("status", status);
 
-    if (parentId) formData.append("parentId", parentId);
+    if (parentId && parentId.trim()) {
+        formData.append("parentId", parentId);
+    }
 
     for (let f of files) {
         formData.append("images", f);
     }
 
-    await fetch(LETTERS_API, {
-        method: "POST",
-        body: formData,
-        credentials: "include"
-    });
+    try {
+        const response = await fetch(`${LETTERS_API}`, {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
 
-    composeOverlay.classList.remove("active");
-    await loadAllData();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "Failed to send letter");
+        }
+
+        // Reset form
+        document.getElementById("letterTitle").value = "";
+        document.getElementById("letterContent").value = "";
+        document.getElementById("letterDate").value = "";
+        document.getElementById("letterOpenDate").value = "";
+        document.getElementById("letterImages").value = "";
+        parentIdInput.value = "";
+        editDraftId.value = "";
+
+        composeOverlay.classList.remove("active");
+        await loadAllData();
+    } catch (error) {
+        console.error("Error sending letter:", error);
+        alert("Failed to send letter: " + error.message);
+    }
 }
-
 /* =========================
    ACTIONS
 ========================= */
