@@ -81,6 +81,24 @@
 
         .container { max-width:1100px; margin:0 auto; padding:12px 8px 40px; }
 
+        /* Filter tabs */
+        .tabs {
+            display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;
+            padding:0 4px;
+        }
+        .tab-btn {
+            background:var(--bg-card); border:1px solid var(--border-card);
+            color:var(--text-secondary); padding:6px 14px; border-radius:30px;
+            cursor:pointer; font-size:0.7rem; font-weight:500;
+            transition:all var(--transition-fast);
+            white-space:nowrap;
+        }
+        .tab-btn:hover { background:var(--bg-hover); }
+        .tab-btn.active {
+            background:var(--accent-soft); border-color:var(--accent);
+            color:var(--accent); font-weight:600;
+        }
+
         /* Upload button - floating style */
         .upload-fab {
             position:fixed; bottom:24px; right:16px; z-index:30;
@@ -340,7 +358,7 @@
         .viewer-nav.prev { left:10px; }
         .viewer-nav.next { right:10px; }
 
-        /* Long press indicator */
+        /* Long press hint */
         .long-press-hint {
             position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
             background:rgba(0,0,0,0.8);
@@ -390,6 +408,14 @@
 </div>
 
 <div class="container">
+    <!-- Filter tabs -->
+    <div class="tabs" id="filterTabs">
+        <button class="tab-btn active" data-filter="all">All</button>
+        <button class="tab-btn" data-filter="IMAGE">📷 Photos</button>
+        <button class="tab-btn" data-filter="VIDEO">🎬 Videos</button>
+        <button class="tab-btn" data-filter="favorites">❤️ Favorites</button>
+    </div>
+
     <div class="media-grid" id="mediaGrid"></div>
 </div>
 
@@ -516,7 +542,9 @@
             });
             if (!res.ok) throw new Error("Upload failed");
             closeUpload();
-            loadMedia();
+            // Reset selection and reload
+            clearSelection();
+            await loadMedia();
         } catch (e) {
             alert("Upload failed. Please try again.");
         } finally {
@@ -611,50 +639,49 @@
     }
 
     // ----- Touch / Mouse for long press -----
-    let pressTimer = null;
     let isLongPress = false;
     let currentPressId = null;
 
     function handleTouchStart(e, id) {
         isLongPress = false;
         currentPressId = id;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(() => {
+        clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(() => {
             isLongPress = true;
             enterSelectMode(id);
         }, 500);
     }
 
     function handleTouchEnd(e) {
-        clearTimeout(pressTimer);
-        if (!isLongPress) {
-            // Short tap handled by onclick
-        }
-        isLongPress = false;
+        clearTimeout(longPressTimer);
+        // Don't reset isLongPress here - handleClick will check it
     }
 
     function handleMouseDown(e, id) {
         isLongPress = false;
         currentPressId = id;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(() => {
+        clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(() => {
             isLongPress = true;
             enterSelectMode(id);
         }, 500);
     }
 
     function handleMouseUp(e) {
-        clearTimeout(pressTimer);
-        isLongPress = false;
+        clearTimeout(longPressTimer);
+        // Don't reset isLongPress here - handleClick will check it
     }
 
     function handleMouseLeave() {
-        clearTimeout(pressTimer);
+        clearTimeout(longPressTimer);
         isLongPress = false;
     }
 
     function handleClick(e, id) {
-        if (isLongPress) return;
+        if (isLongPress) {
+            isLongPress = false;
+            return;
+        }
         if (isSelectMode) {
             toggleSelect(id);
         } else {
@@ -731,12 +758,14 @@
         selectedIds.clear();
         await loadMedia();
         document.getElementById("selectionToolbar").classList.remove("active");
+        isSelectMode = false;
     }
 
     // ----- Favorite -----
     async function toggleFavorite(id) {
         try {
             await fetch(`${API}/${id}/favorite`, { method: "PUT" });
+            // Reload to get fresh data
             await loadMedia();
         } catch (e) {
             alert("Failed to update favorite.");
@@ -762,16 +791,18 @@
         }
     }
 
-    function shareSelected() {
+    async function shareSelected() {
         if (selectedIds.size === 0) return;
         const items = allMedia.filter(m => selectedIds.has(m.id));
         const urls = items.map(m => m.fileUrl).join("\n");
         if (navigator.share) {
-            navigator.share({
-                title: "Our Space memories",
-                text: `Check out these ${items.length} memories from Our Space!`,
-                url: urls
-            }).catch(() => {});
+            try {
+                await navigator.share({
+                    title: "Our Space memories",
+                    text: `Check out these ${items.length} memories from Our Space!`,
+                    url: items[0]?.fileUrl || ""
+                });
+            } catch (e) {}
         } else {
             navigator.clipboard.writeText(urls).then(() => {
                 alert(`${items.length} links copied to clipboard!`);
@@ -807,6 +838,7 @@
     }
 
     function navigateViewer(direction) {
+        if (allMedia.length === 0) return;
         viewerIndex = (viewerIndex + direction + allMedia.length) % allMedia.length;
         showViewer();
     }
@@ -834,9 +866,11 @@
             }
         }
         if (e.key === "ArrowLeft" && document.getElementById("viewerOverlay").classList.contains("active")) {
+            e.preventDefault();
             navigateViewer(-1);
         }
         if (e.key === "ArrowRight" && document.getElementById("viewerOverlay").classList.contains("active")) {
+            e.preventDefault();
             navigateViewer(1);
         }
     });

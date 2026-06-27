@@ -7,40 +7,42 @@ import com.example.demo.repository.GalleryRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.MessageDigest;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/gallery")
 public class GalleryController {
 
-    private final GalleryRepository repo;
+    private final GalleryRepository repository;
     private final Cloudinary cloudinary;
 
-    public GalleryController(GalleryController repo, Cloudinary cloudinary) {
-        this.repo = repo;
+    // ✅ FIXED: Correct constructor parameter name
+    public GalleryController(GalleryRepository repository, Cloudinary cloudinary) {
+        this.repository = repository;
         this.cloudinary = cloudinary;
     }
 
     @GetMapping
     public List<GalleryItem> getAll() {
-        return repo.findAll();
+        return repository.findAll();
     }
 
     @GetMapping("/type/{type}")
     public List<GalleryItem> getByType(@PathVariable String type) {
-        return repo.findByType(type.toUpperCase());
+        return repository.findByType(type.toUpperCase());
     }
 
     @GetMapping("/favorites")
     public List<GalleryItem> getFavorites() {
-        return repo.findByFavoriteTrue();
+        return repository.findByFavoriteTrue();
     }
 
     @PutMapping("/{id}/favorite")
     public GalleryItem toggleFavorite(@PathVariable Long id) {
-        GalleryItem item = repo.findById(id).orElseThrow();
+        GalleryItem item = repository.findById(id).orElseThrow();
         item.setFavorite(!item.isFavorite());
-        return repo.save(item);
+        return repository.save(item);
     }
 
     @PostMapping(consumes = "multipart/form-data")
@@ -53,7 +55,7 @@ public class GalleryController {
         Set<String> existingHashes = new HashSet<>();
         
         // Get existing file hashes to detect duplicates
-        for (GalleryItem existing : repo.findAll()) {
+        for (GalleryItem existing : repository.findAll()) {
             if (existing.getFileHash() != null) {
                 existingHashes.add(existing.getFileHash());
             }
@@ -62,17 +64,18 @@ public class GalleryController {
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
 
-            // Generate hash for duplicate detection
+            // ✅ Generate proper SHA-256 hash for duplicate detection
             byte[] bytes = file.getBytes();
-            String hash = Base64.getEncoder().encodeToString(
-                Arrays.copyOfRange(bytes, 0, Math.min(bytes.length, 1024))
-            );
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(bytes);
+            String hash = Base64.getEncoder().encodeToString(hashBytes);
 
             // Skip duplicate
             if (existingHashes.contains(hash)) {
                 continue;
             }
 
+            // Upload to Cloudinary
             Map uploadResult = cloudinary.uploader().upload(
                     bytes,
                     ObjectUtils.asMap(
@@ -89,7 +92,7 @@ public class GalleryController {
             item.setFileUrl(url);
             item.setFileHash(hash);
 
-            saved.add(repo.save(item));
+            saved.add(repository.save(item));
         }
 
         return saved;
@@ -97,6 +100,6 @@ public class GalleryController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        repo.deleteById(id);
+        repository.deleteById(id);
     }
 }
