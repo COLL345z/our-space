@@ -223,13 +223,16 @@
             opacity:1;
         }
         .media-item .overlay .actions {
-            display:flex; gap:16px;
+            display:flex; gap:12px;
+            flex-wrap:wrap;
+            justify-content:center;
         }
         .media-item .overlay button {
             background:rgba(255,255,255,0.15);
             border:none; color:white;
-            width:44px; height:44px; border-radius:50%;
-            font-size:1.1rem; cursor:pointer;
+            width:40px; height:40px;
+            border-radius:50%;
+            font-size:0.95rem; cursor:pointer;
             backdrop-filter:blur(4px);
             transition:all 0.2s ease;
         }
@@ -242,6 +245,9 @@
         }
         .media-item .overlay .share-btn {
             color:#5db8d4;
+        }
+        .media-item .overlay .memory-btn {
+            color:var(--accent);
         }
         .media-item .overlay .fav-btn.active {
             color:var(--accent);
@@ -302,14 +308,16 @@
             font-size:0.85rem; font-weight:600;
         }
         .selection-toolbar .actions {
-            display:flex; gap:12px;
+            display:flex; gap:8px;
+            flex-wrap:wrap;
         }
         .selection-toolbar .actions button {
             background:none; border:none; color:var(--text-secondary);
-            font-size:0.85rem; cursor:pointer; padding:6px 12px;
+            font-size:0.75rem; cursor:pointer; padding:6px 10px;
             border-radius:6px; transition:all 0.2s;
-            display:flex; align-items:center; gap:6px;
+            display:flex; align-items:center; gap:5px;
             font-family:var(--font);
+            white-space:nowrap;
         }
         .selection-toolbar .actions button:hover {
             background:var(--bg-hover);
@@ -319,6 +327,9 @@
         }
         .selection-toolbar .actions .share-selected {
             color:#5db8d4;
+        }
+        .selection-toolbar .actions .memory-selected {
+            color:var(--accent);
         }
 
         /* Fullscreen viewer */
@@ -383,6 +394,28 @@
             font-size:3rem; margin-bottom:12px; opacity:0.5;
         }
 
+        /* Toast notification */
+        .toast {
+            position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+            background:rgba(0,0,0,0.85);
+            backdrop-filter:blur(8px);
+            padding:12px 24px; border-radius:12px;
+            font-size:0.85rem; color:var(--text-primary);
+            z-index:60;
+            display:none;
+            text-align:center;
+            border:1px solid var(--border-card);
+            max-width:90%;
+        }
+        .toast.show {
+            display:block;
+            animation:toastIn 0.3s ease;
+        }
+        @keyframes toastIn {
+            from { opacity:0; transform:translateX(-50%) translateY(20px); }
+            to { opacity:1; transform:translateX(-50%) translateY(0); }
+        }
+
         @media (min-width: 600px) {
             .media-grid {
                 grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -439,11 +472,27 @@
         </div>
         <div class="form-group">
             <label>Choose files</label>
-            <label class="file-picker" id="filePicker">
-                <i class="fa-solid fa-folder-open"></i>
-                <span id="fileLabel">Select from gallery</span>
-                <input type="file" id="filesInput" accept="image/*,video/*" multiple>
-            </label>
+            <!-- FIXED: Multiple file pickers for native gallery access -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <!-- For Photos - uses image/* to open gallery -->
+                <label class="file-picker" id="photoPicker" style="border-color: rgba(93,184,212,0.3);">
+                    <i class="fa-solid fa-image" style="color: var(--rehema, #5db8d4);"></i>
+                    <span>Choose Photos</span>
+                    <input type="file" id="photoInput" accept="image/*" multiple>
+                </label>
+                <!-- For Videos - uses video/* to open gallery -->
+                <label class="file-picker" id="videoPicker" style="border-color: rgba(224,168,59,0.3);">
+                    <i class="fa-solid fa-video" style="color: var(--accent, #e0a83b);"></i>
+                    <span>Choose Videos</span>
+                    <input type="file" id="videoInput" accept="video/*" multiple>
+                </label>
+                <!-- Combined - uses */* but prioritized for gallery -->
+                <label class="file-picker" id="allPicker" style="border-color: rgba(60,184,120,0.3);">
+                    <i class="fa-solid fa-folder-open" style="color: var(--collins, #3cb878);"></i>
+                    <span>Choose All (Photos & Videos)</span>
+                    <input type="file" id="allInput" accept="image/*,video/*" multiple>
+                </label>
+            </div>
             <div id="fileCount" style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"></div>
         </div>
         <div class="upload-actions">
@@ -459,8 +508,9 @@
 <div class="selection-toolbar" id="selectionToolbar">
     <span class="count" id="selectionCount">0 selected</span>
     <div class="actions">
-        <button onclick="shareSelected()"><i class="fa-solid fa-share-nodes"></i> Share</button>
-        <button class="delete-selected" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Delete</button>
+        <button onclick="sendSelectedToMemory()" class="memory-selected"><i class="fa-solid fa-bookmark"></i> Memory</button>
+        <button onclick="shareSelected()" class="share-selected"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <button onclick="deleteSelected()" class="delete-selected"><i class="fa-solid fa-trash"></i> Delete</button>
     </div>
 </div>
 
@@ -474,12 +524,16 @@
     </div>
 </div>
 
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
 <!-- Long press hint -->
 <div class="long-press-hint" id="longPressHint">Hold to select multiple</div>
 
 <script>
     // const API = "http://localhost:8080/api/gallery";
     const API = "https://our-space-htoh.onrender.com/api/gallery";
+    const MEMORY_API = "https://our-space-htoh.onrender.com/api/memories";
     
     let allMedia = [];
     let currentFilter = "all";
@@ -487,21 +541,65 @@
     let isSelectMode = false;
     let longPressTimer = null;
     let viewerIndex = 0;
+    let selectedFiles = [];
+
+    // ----- File input handling - combine all file inputs -----
+    const photoInput = document.getElementById('photoInput');
+    const videoInput = document.getElementById('videoInput');
+    const allInput = document.getElementById('allInput');
+    const fileCount = document.getElementById('fileCount');
+
+    function updateFileCount() {
+        const total = selectedFiles.length;
+        if (total > 0) {
+            const photos = selectedFiles.filter(f => f.type.startsWith('image/')).length;
+            const videos = selectedFiles.filter(f => f.type.startsWith('video/')).length;
+            fileCount.textContent = `${total} file${total > 1 ? 's' : ''} selected (${photos} photo${photos !== 1 ? 's' : ''}, ${videos} video${videos !== 1 ? 's' : ''})`;
+        } else {
+            fileCount.textContent = '';
+        }
+    }
+
+    // Handle each file input
+    function handleFiles(input, event) {
+        const files = Array.from(event.target.files || []);
+        // Add new files to the collection
+        files.forEach(file => {
+            // Check if already selected
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
+            }
+        });
+        updateFileCount();
+        // Clear the input so the same file can be selected again
+        input.value = '';
+    }
+
+    photoInput.addEventListener('change', (e) => handleFiles(photoInput, e));
+    videoInput.addEventListener('change', (e) => handleFiles(videoInput, e));
+    allInput.addEventListener('change', (e) => handleFiles(allInput, e));
+
+    // Reset files when closing
+    function resetFileInputs() {
+        selectedFiles = [];
+        photoInput.value = '';
+        videoInput.value = '';
+        allInput.value = '';
+        fileCount.textContent = '';
+    }
+
+    // ----- Toast -----
+    function showToast(message, duration = 3000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, duration);
+    }
 
     // ----- Upload -----
-    document.getElementById("filesInput").addEventListener("change", function(e) {
-        const files = e.target.files;
-        const label = document.getElementById("fileLabel");
-        const count = document.getElementById("fileCount");
-        if (files.length > 0) {
-            label.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
-            count.textContent = `${files.length} file${files.length > 1 ? 's' : ''} ready to upload`;
-        } else {
-            label.textContent = "Select from gallery";
-            count.textContent = "";
-        }
-    });
-
     document.getElementById("uploadFab").addEventListener("click", () => {
         document.getElementById("uploadModal").classList.add("active");
     });
@@ -509,17 +607,14 @@
     function closeUpload() {
         document.getElementById("uploadModal").classList.remove("active");
         document.getElementById("titleInput").value = "";
-        document.getElementById("filesInput").value = "";
-        document.getElementById("fileLabel").textContent = "Select from gallery";
-        document.getElementById("fileCount").textContent = "";
+        resetFileInputs();
     }
 
     async function uploadMedia() {
         const title = document.getElementById("titleInput").value.trim() || "Untitled";
         const type = document.getElementById("typeInput").value;
-        const files = document.getElementById("filesInput").files;
 
-        if (files.length === 0) {
+        if (selectedFiles.length === 0) {
             alert("Please select at least one file.");
             return;
         }
@@ -531,7 +626,7 @@
         const formData = new FormData();
         formData.append("title", title);
         formData.append("type", type);
-        for (let f of files) {
+        for (let f of selectedFiles) {
             formData.append("files", f);
         }
 
@@ -542,9 +637,10 @@
             });
             if (!res.ok) throw new Error("Upload failed");
             closeUpload();
-            // Reset selection and reload
             clearSelection();
             await loadMedia();
+            showToast(`✅ ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} uploaded successfully!`);
+            resetFileInputs();
         } catch (e) {
             alert("Upload failed. Please try again.");
         } finally {
@@ -625,6 +721,9 @@
                             <button class="fav-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${item.id})">
                                 <i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>
                             </button>
+                            <button class="memory-btn" onclick="event.stopPropagation(); sendToMemory(${item.id})">
+                                <i class="fa-solid fa-bookmark"></i>
+                            </button>
                             <button class="share-btn" onclick="event.stopPropagation(); shareItem(${item.id})">
                                 <i class="fa-solid fa-share-nodes"></i>
                             </button>
@@ -654,7 +753,6 @@
 
     function handleTouchEnd(e) {
         clearTimeout(longPressTimer);
-        // Don't reset isLongPress here - handleClick will check it
     }
 
     function handleMouseDown(e, id) {
@@ -669,7 +767,6 @@
 
     function handleMouseUp(e) {
         clearTimeout(longPressTimer);
-        // Don't reset isLongPress here - handleClick will check it
     }
 
     function handleMouseLeave() {
@@ -716,7 +813,6 @@
             isSelectMode = false;
             document.getElementById("selectionToolbar").classList.remove("active");
         }
-        // Update grid items
         document.querySelectorAll(".media-item").forEach(el => {
             const id = parseInt(el.dataset.id);
             el.classList.toggle("selected", selectedIds.has(id));
@@ -728,6 +824,70 @@
         isSelectMode = false;
         document.getElementById("selectionToolbar").classList.remove("active");
         document.querySelectorAll(".media-item").forEach(el => el.classList.remove("selected"));
+    }
+
+    // ----- Send to Memory -----
+    async function sendToMemory(id) {
+        const item = allMedia.find(m => m.id === id);
+        if (!item) return;
+        
+        try {
+            const memoryData = {
+                title: item.title || "From Gallery",
+                description: `📸 Shared from gallery`,
+                category: "PHOTO",
+                uploadedBy: "Shared",
+                imageUrls: [item.fileUrl],
+                dateCreated: new Date().toISOString().split('T')[0]
+            };
+            
+            const res = await fetch(MEMORY_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(memoryData)
+            });
+            
+            if (!res.ok) throw new Error("Failed to save to memory");
+            
+            showToast("✅ Added to Memories! ❤️");
+        } catch (e) {
+            alert("Failed to add to memories. Please try again.");
+        }
+    }
+
+    async function sendSelectedToMemory() {
+        if (selectedIds.size === 0) return;
+        
+        const items = allMedia.filter(m => selectedIds.has(m.id));
+        let successCount = 0;
+        
+        for (let item of items) {
+            try {
+                const memoryData = {
+                    title: item.title || "From Gallery",
+                    description: `📸 Shared from gallery`,
+                    category: "PHOTO",
+                    uploadedBy: "Shared",
+                    imageUrls: [item.fileUrl],
+                    dateCreated: new Date().toISOString().split('T')[0]
+                };
+                
+                const res = await fetch(MEMORY_API, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(memoryData)
+                });
+                
+                if (res.ok) successCount++;
+            } catch (e) {}
+        }
+        
+        if (successCount > 0) {
+            showToast(`✅ ${successCount} item${successCount > 1 ? 's' : ''} added to Memories! ❤️`);
+            clearSelection();
+        } else {
+            alert("Failed to add items to memories.");
+        }
     }
 
     // ----- Delete -----
@@ -765,7 +925,6 @@
     async function toggleFavorite(id) {
         try {
             await fetch(`${API}/${id}/favorite`, { method: "PUT" });
-            // Reload to get fresh data
             await loadMedia();
         } catch (e) {
             alert("Failed to update favorite.");
@@ -782,9 +941,8 @@
                 url: item.fileUrl
             }).catch(() => {});
         } else {
-            // Fallback - copy to clipboard
             navigator.clipboard.writeText(item.fileUrl).then(() => {
-                alert("Link copied to clipboard!");
+                showToast("📋 Link copied to clipboard!");
             }).catch(() => {
                 prompt("Copy this URL:", item.fileUrl);
             });
@@ -805,7 +963,7 @@
             } catch (e) {}
         } else {
             navigator.clipboard.writeText(urls).then(() => {
-                alert(`${items.length} links copied to clipboard!`);
+                showToast(`📋 ${items.length} links copied to clipboard!`);
             }).catch(() => {
                 prompt("Copy these URLs:", urls);
             });
