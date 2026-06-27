@@ -232,7 +232,8 @@
             height:200px;
             background:var(--bg-tertiary);
         }
-        .card-img-container img {
+        .card-img-container img,
+        .card-img-container video {
             width:100%; height:100%; object-fit:cover;
             display:block;
         }
@@ -248,6 +249,15 @@
             display: flex;
             align-items: center;
             gap:4px;
+        }
+        .card-video-play {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
         .card-body {
             padding:16px; display:flex; flex-direction:column; gap:8px;
@@ -309,7 +319,8 @@
             background: var(--bg-tertiary);
             max-height: 400px;
         }
-        .modal-gallery img {
+        .modal-gallery img,
+        .modal-gallery video {
             width: 100%;
             flex-shrink: 0;
             scroll-snap-align: center;
@@ -378,11 +389,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Images</label>
+                <label>Media (Photos & Videos)</label>
                 <div class="file-input-wrapper">
-                    <input type="file" id="imageFiles" accept="image/*" multiple>
+                    <input type="file" id="mediaFiles" accept="image/*,video/*" multiple>
                     <span class="file-label" id="fileLabel">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Choose photos
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Choose photos & videos
                     </span>
                 </div>
                 <div class="file-count" id="fileCount"></div>
@@ -454,15 +465,24 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
     let currentCategory = "all";
 
     // File input change handler
-    document.getElementById("imageFiles").addEventListener("change", (e) => {
+    document.getElementById("mediaFiles").addEventListener("change", (e) => {
         const files = e.target.files;
         const label = document.getElementById("fileLabel");
         const count = document.getElementById("fileCount");
         if (files.length > 0) {
-            label.innerHTML = `<i class="fa-solid fa-check"></i> ${files.length} file${files.length > 1 ? 's' : ''} selected`;
-            count.textContent = `${files.length} image${files.length > 1 ? 's' : ''} ready to upload`;
+            let imgCount = 0, vidCount = 0;
+            for (let f of files) {
+                if (f.type.startsWith('image/')) imgCount++;
+                else if (f.type.startsWith('video/')) vidCount++;
+            }
+            let msg = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+            if (imgCount > 0) msg += ` (${imgCount} photo${imgCount !== 1 ? 's' : ''}`;
+            if (vidCount > 0) msg += `${imgCount > 0 ? ', ' : ' ('}${vidCount} video${vidCount !== 1 ? 's' : ''}`;
+            if (imgCount > 0 || vidCount > 0) msg += ')';
+            label.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
+            count.textContent = `${files.length} media file${files.length > 1 ? 's' : ''} ready to upload`;
         } else {
-            label.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos`;
+            label.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos & videos`;
             count.textContent = '';
         }
     });
@@ -481,10 +501,10 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
     function clearForm() {
         document.getElementById("titleInput").value = "";
         document.getElementById("categoryInput").value = "PHOTO";
-        document.getElementById("imageFiles").value = "";
+        document.getElementById("mediaFiles").value = "";
         document.getElementById("uploadedByInput").value = "";
         document.getElementById("descInput").value = "";
-        document.getElementById("fileLabel").innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos`;
+        document.getElementById("fileLabel").innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Choose photos & videos`;
         document.getElementById("fileCount").textContent = "";
     }
 
@@ -511,6 +531,14 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
         renderMemories(filtered);
     }
 
+    // Helper to check if a URL is a video based on extension
+    function isVideoUrl(url) {
+        if (!url) return false;
+        const videoExtensions = ['.mp4', '.mov', '.webm', '.mkv', '.3gp', '.avi', '.ogv'];
+        const lowerUrl = url.toLowerCase();
+        return videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + '?'));
+    }
+
     function renderMemories(memories) {
         if (!memories.length) {
             grid.innerHTML = `
@@ -522,18 +550,30 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
             return;
         }
         grid.innerHTML = memories.reverse().map(m => {
-            // Use first image as thumbnail, or a placeholder
             const imageUrls = m.imageUrls || (m.imageUrl ? [m.imageUrl] : []);
-            const firstImage = imageUrls.length > 0 ? imageUrls[0] : '';
+            const firstMedia = imageUrls.length > 0 ? imageUrls[0] : null;
             const imageCount = imageUrls.length;
             const dateStr = m.dateCreated
                 ? new Date(m.dateCreated).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" })
                 : "";
 
+            let mediaPreviewHTML = '';
+            if (firstMedia) {
+                if (isVideoUrl(firstMedia)) {
+                    // Show a video tag as thumbnail with play icon overlay
+                    mediaPreviewHTML = `
+                        <video src="${escapeHTML(firstMedia)}" muted preload="metadata"></video>
+                        <div class="card-video-play"><i class="fa-solid fa-play-circle"></i></div>
+                    `;
+                } else {
+                    mediaPreviewHTML = `<img src="${escapeHTML(firstMedia)}" alt="${escapeHTML(m.title || '')}" onerror="this.style.display='none'">`;
+                }
+            }
+
             return `
                 <div class="card" onclick="openModal('${m.id}')">
                     <div class="card-img-container">
-                        <img src="${escapeHTML(firstImage)}" alt="${escapeHTML(m.title || '')}" onerror="this.style.display='none'">
+                        ${mediaPreviewHTML}
                         ${imageCount > 1 ? `<div class="card-img-count"><i class="fa-solid fa-images"></i> ${imageCount}</div>` : ''}
                     </div>
                     <div class="card-body">
@@ -552,13 +592,19 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
         }).join("");
     }
 
-    // Open modal with all images
+    // Open modal with all media
     window.openModal = function(id) {
         const memory = allMemories.find(m => m.id == id);
         if (!memory) return;
 
-        const imageUrls = memory.imageUrls || (memory.imageUrl ? [memory.imageUrl] : []);
-        modalGallery.innerHTML = imageUrls.map(url => `<img src="${escapeHTML(url)}" alt="">`).join('');
+        const mediaUrls = memory.imageUrls || (memory.imageUrl ? [memory.imageUrl] : []);
+        modalGallery.innerHTML = mediaUrls.map(url => {
+            if (isVideoUrl(url)) {
+                return `<video src="${escapeHTML(url)}" controls playsinline></video>`;
+            } else {
+                return `<img src="${escapeHTML(url)}" alt="">`;
+            }
+        }).join('');
 
         modalCategory.innerHTML = `<span class="card-category cat-${memory.category}">${escapeHTML(memory.category || 'PHOTO')}</span>`;
         modalTitle.textContent = memory.title || "Untitled";
@@ -576,87 +622,77 @@ const API = "https://our-space-htoh.onrender.com/api/memories";
         document.body.style.overflow = "";
     };
 
-   // Update the uploadImages function to handle the new response format
-async function uploadImages(files) {
-    const formData = new FormData();
-    for (let file of files) {
-        formData.append("files", file); // Note: 'files' not 'file'
-    }
-    
-    try {
+    // Upload media (images & videos) to server
+    async function uploadMedia(files) {
+        const formData = new FormData();
+        for (let file of files) {
+            formData.append("files", file);
+        }
         const res = await fetch(`${API}/upload`, {
             method: "POST",
             body: formData,
-            // Remove Content-Type header - let browser set it for FormData
         });
-        
         if (!res.ok) {
             const errorText = await res.text();
             throw new Error(errorText || "Upload failed");
         }
-        
-        const urls = await res.json();
-        return urls; // Array of URLs
-    } catch (error) {
-        console.error("Upload error:", error);
-        throw error;
-    }
-}
-
-// Update btnSave click handler
-btnSave.addEventListener("click", async () => {
-    const title = document.getElementById("titleInput").value.trim();
-    const fileInput = document.getElementById("imageFiles");
-    const files = fileInput.files;
-
-    if (!title && files.length === 0) {
-        alert("Please enter a title or choose at least one image.");
-        return;
+        return await res.json(); // returns array of URLs
     }
 
-    btnSave.disabled = true;
-    btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    btnSave.addEventListener("click", async () => {
+        const title = document.getElementById("titleInput").value.trim();
+        const fileInput = document.getElementById("mediaFiles");
+        const files = fileInput.files;
 
-    let imageUrls = [];
-    if (files.length > 0) {
-        try {
-            imageUrls = await uploadImages(files);
-        } catch (e) {
-            alert("Image upload failed: " + e.message);
-            btnSave.disabled = false;
-            btnSave.innerHTML = "Save memory";
+        if (!title && files.length === 0) {
+            alert("Please enter a title or choose at least one photo/video.");
             return;
         }
-    }
 
-    const memory = {
-        title: title || "Untitled",
-        category: document.getElementById("categoryInput").value,
-        description: document.getElementById("descInput").value.trim(),
-        uploadedBy: document.getElementById("uploadedByInput").value.trim() || "Anonymous",
-        imageUrls: imageUrls,
-        dateCreated: new Date().toISOString().split('T')[0] // Send only date part
-    };
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-    try {
-        const res = await fetch(API, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(memory)
-        });
-        if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(errorText || "Save failed");
+        let mediaUrls = [];
+        if (files.length > 0) {
+            try {
+                mediaUrls = await uploadMedia(files);
+            } catch (e) {
+                alert("Upload failed: " + e.message);
+                btnSave.disabled = false;
+                btnSave.innerHTML = "Save memory";
+                return;
+            }
         }
-        closeForm();
-        loadMemories();
-    } catch (e) {
-        alert("Could not save memory: " + e.message);
-    } finally {
-        btnSave.disabled = false;
-        btnSave.innerHTML = "Save memory";
-    }
-});
+
+        const memory = {
+            title: title || "Untitled",
+            category: document.getElementById("categoryInput").value,
+            description: document.getElementById("descInput").value.trim(),
+            uploadedBy: document.getElementById("uploadedByInput").value.trim() || "Anonymous",
+            imageUrls: mediaUrls, // includes both images and videos
+            dateCreated: new Date().toISOString().split('T')[0]
+        };
+
+        try {
+            const res = await fetch(API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(memory)
+            });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Save failed");
+            }
+            closeForm();
+            loadMemories();
+        } catch (e) {
+            alert("Could not save memory: " + e.message);
+        } finally {
+            btnSave.disabled = false;
+            btnSave.innerHTML = "Save memory";
+        }
+    });
+
     async function deleteMemory(id) {
         if (!confirm("Delete this memory?")) return;
         try {

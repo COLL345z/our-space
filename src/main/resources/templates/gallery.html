@@ -143,14 +143,14 @@
             color:var(--text-muted); text-transform:uppercase;
             letter-spacing:0.04em; margin-bottom:4px;
         }
-        .upload-sheet input, .upload-sheet select {
+        .upload-sheet input {
             font-family:var(--font); font-size:0.85rem;
             padding:10px 14px; border:1.5px solid var(--border-card);
             border-radius:var(--radius-sm); background:var(--bg-input);
             color:var(--text-primary); outline:none; width:100%;
             transition:all var(--transition-fast);
         }
-        .upload-sheet input:focus, .upload-sheet select:focus {
+        .upload-sheet input:focus {
             border-color:var(--accent);
         }
         .file-picker {
@@ -204,17 +204,19 @@
             width:100%; height:100%; object-fit:cover;
             display:block;
         }
+        /* ⭐ FIXED: overlay invisible AND non-clickable when hidden */
         .media-item .overlay {
             position:absolute; inset:0;
             background:rgba(0,0,0,0);
-            transition:background 0.2s ease;
             display:flex; align-items:center; justify-content:center;
             opacity:0;
+            pointer-events:none;  /* ← THIS FIXES THE ACCIDENTAL DELETE BUG */
             transition:all 0.2s ease;
         }
         .media-item .overlay.show {
             background:rgba(0,0,0,0.5);
             opacity:1;
+            pointer-events:auto;  /* ← clickable only when visible */
         }
         .media-item .overlay .actions {
             display:flex; gap:12px;
@@ -407,7 +409,7 @@
 
 <button class="upload-fab" id="uploadFab"><i class="fa-solid fa-plus"></i></button>
 
-<!-- Upload modal -->
+<!-- Upload modal (clean – no type dropdown, no tips) -->
 <div class="upload-modal" id="uploadModal">
     <div class="upload-sheet">
         <h3><i class="fa-solid fa-cloud-arrow-up"></i> Add to Gallery</h3>
@@ -416,16 +418,8 @@
             <input type="text" id="titleInput" placeholder="What's this memory?">
         </div>
         <div class="form-group">
-            <label>Type</label>
-            <select id="typeInput">
-                <option value="IMAGE">Photo</option>
-                <option value="VIDEO">Video</option>
-            </select>
-        </div>
-        <div class="form-group">
             <label>Choose from your phone</label>
             <div style="display:flex; flex-direction:column; gap:8px;">
-                <!-- OPTION A: Specific image picker (may still open Google Photos if set as default) -->
                 <label class="file-picker" style="border-color: rgba(93,184,212,0.4);">
                     <i class="fa-solid fa-image" style="color:#5db8d4;"></i>
                     <span>📷 Photos (quick pick)</span>
@@ -433,7 +427,6 @@
                            accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" 
                            multiple>
                 </label>
-                <!-- OPTION B: Specific video picker -->
                 <label class="file-picker" style="border-color: rgba(224,168,59,0.4);">
                     <i class="fa-solid fa-video" style="color:#e0a83b;"></i>
                     <span>🎬 Videos (quick pick)</span>
@@ -441,7 +434,6 @@
                            accept=".mp4,.mov,.webm,.mkv,.3gp,video/mp4,video/quicktime,video/webm,video/x-matroska,video/3gpp" 
                            multiple>
                 </label>
-                <!-- ⭐ OPTION C: Browse all files – opens phone's file manager, NOT Google Photos -->
                 <label class="file-picker" style="border-color: rgba(60,184,120,0.6); border-width:2px;">
                     <i class="fa-solid fa-folder-open" style="color:#3cb878;"></i>
                     <span>📁 Browse Files (if Google Photos keeps opening)</span>
@@ -451,10 +443,6 @@
                 </label>
             </div>
             <div id="fileCount" style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"></div>
-            <p style="font-size:0.6rem; color:var(--text-muted); margin-top:6px; opacity:0.7;">
-                💡 <strong>Tip:</strong> Use <em>"Browse Files"</em> to see all files, then go to <strong>DCIM → Camera</strong>.<br>
-                To fix it permanently: <strong>Settings → Apps → Google Photos → Open by default → Clear defaults</strong>.
-            </p>
         </div>
         <div class="upload-actions">
             <button class="btn-cancel-upload" onclick="closeUpload()">Cancel</button>
@@ -501,7 +489,6 @@
     let viewerIndex = 0;
     let selectedFiles = [];
 
-    // ----- File inputs -----
     const photoInput = document.getElementById('photoInput');
     const videoInput = document.getElementById('videoInput');
     const allFilesInput = document.getElementById('allFilesInput');
@@ -541,7 +528,6 @@
         fileCount.textContent = '';
     }
 
-    // ----- Toast -----
     function showToast(message, duration = 3000) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
@@ -552,7 +538,51 @@
         }, duration);
     }
 
-    // ----- Upload -----
+    // ⚡ Faster compression – max 1200px, quality 60%
+    function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.6) {
+        return new Promise((resolve) => {
+            if (!file.type.startsWith('image/')) {
+                return resolve(file);
+            }
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width <= maxWidth && height <= maxHeight) {
+                    return resolve(file);
+                }
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    } else {
+                        resolve(file);
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve(file);
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
     document.getElementById("uploadFab").addEventListener("click", () => {
         document.getElementById("uploadModal").classList.add("active");
     });
@@ -565,8 +595,7 @@
 
     async function uploadMedia() {
         const title = document.getElementById("titleInput").value.trim() || "Untitled";
-        const type = document.getElementById("typeInput").value;
-
+        
         if (selectedFiles.length === 0) {
             alert("Please select at least one file.");
             return;
@@ -574,12 +603,25 @@
 
         const btn = document.getElementById("uploadBtn");
         btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Compressing...';
+
+        // Compress images before upload
+        const compressedFiles = [];
+        for (let file of selectedFiles) {
+            if (file.type.startsWith('image/')) {
+                const compressed = await compressImage(file);
+                compressedFiles.push(compressed);
+            } else {
+                compressedFiles.push(file);
+            }
+        }
+
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
 
         const formData = new FormData();
         formData.append("title", title);
-        formData.append("type", type);
-        for (let f of selectedFiles) {
+        // No type field – server auto‑detects from file
+        for (let f of compressedFiles) {
             formData.append("files", f);
         }
 
@@ -592,7 +634,7 @@
             closeUpload();
             clearSelection();
             await loadMedia();
-            showToast(`✅ ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} uploaded successfully!`);
+            showToast(`✅ ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} uploaded!`);
             resetFileInputs();
         } catch (e) {
             alert("Upload failed. Please try again.");
@@ -602,7 +644,6 @@
         }
     }
 
-    // ----- Load & Render -----
     async function loadMedia() {
         try {
             let url = API;
@@ -658,8 +699,8 @@
                      onmouseleave="handleMouseLeave()"
                      onclick="handleClick(event, ${item.id})">
                     ${isVideo ? 
-                        `<video src="${item.fileUrl}" muted preload="metadata"></video>` : 
-                        `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}" loading="lazy">`
+                        `<video src="${item.fileUrl}" muted preload="metadata" playsinline></video>` : 
+                        `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}" loading="lazy" decoding="async">`
                     }
                     <div class="badge">
                         <i class="fa-solid ${isVideo ? 'fa-video' : 'fa-image'}"></i>
@@ -669,7 +710,7 @@
                         <i class="fa-solid fa-heart"></i>
                     </div>
                     <div class="selection-check">✓</div>
-                    <div class="overlay" id="overlay-${item.id}">
+                    <div class="overlay ${isSelected ? 'show' : ''}" id="overlay-${item.id}">
                         <div class="actions">
                             <button class="fav-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${item.id})">
                                 <i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>
@@ -690,7 +731,7 @@
         }).join("");
     }
 
-    // ----- Touch / Mouse for long press -----
+    // ⭐ Longer long‑press (800ms) to avoid accidental triggers
     let isLongPress = false;
     let currentPressId = null;
 
@@ -701,7 +742,7 @@
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             enterSelectMode(id);
-        }, 500);
+        }, 800);
     }
 
     function handleTouchEnd(e) { clearTimeout(longPressTimer); }
@@ -713,7 +754,7 @@
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             enterSelectMode(id);
-        }, 500);
+        }, 800);
     }
 
     function handleMouseUp(e) { clearTimeout(longPressTimer); }
@@ -724,7 +765,6 @@
         if (isSelectMode) { toggleSelect(id); } else { openViewer(id); }
     }
 
-    // ----- Selection Mode -----
     function enterSelectMode(id) {
         isSelectMode = true;
         toggleSelect(id);
@@ -747,7 +787,13 @@
         }
         document.querySelectorAll(".media-item").forEach(el => {
             const id = parseInt(el.dataset.id);
-            el.classList.toggle("selected", selectedIds.has(id));
+            const isSel = selectedIds.has(id);
+            el.classList.toggle("selected", isSel);
+            // Also toggle overlay visibility
+            const overlay = el.querySelector(".overlay");
+            if (overlay) {
+                overlay.classList.toggle("show", isSel);
+            }
         });
     }
 
@@ -755,10 +801,13 @@
         selectedIds.clear();
         isSelectMode = false;
         document.getElementById("selectionToolbar").classList.remove("active");
-        document.querySelectorAll(".media-item").forEach(el => el.classList.remove("selected"));
+        document.querySelectorAll(".media-item").forEach(el => {
+            el.classList.remove("selected");
+            const overlay = el.querySelector(".overlay");
+            if (overlay) overlay.classList.remove("show");
+        });
     }
 
-    // ----- Send to Memory -----
     async function sendToMemory(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
@@ -779,7 +828,7 @@
             if (!res.ok) throw new Error("Failed to save to memory");
             showToast("✅ Added to Memories! ❤️");
         } catch (e) {
-            alert("Failed to add to memories. Please try again.");
+            alert("Failed to add to memories.");
         }
     }
 
@@ -813,7 +862,6 @@
         }
     }
 
-    // ----- Delete -----
     async function deleteItem(id) {
         if (!confirm("Delete this item?")) return;
         try {
@@ -839,7 +887,6 @@
         isSelectMode = false;
     }
 
-    // ----- Favorite -----
     async function toggleFavorite(id) {
         try {
             await fetch(`${API}/${id}/favorite`, { method: "PUT" });
@@ -847,7 +894,6 @@
         } catch (e) { alert("Failed to update favorite."); }
     }
 
-    // ----- Share -----
     function shareItem(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
@@ -879,7 +925,6 @@
         }
     }
 
-    // ----- Viewer -----
     function openViewer(id) {
         const idx = allMedia.findIndex(m => m.id === id);
         if (idx === -1) return;
@@ -894,7 +939,7 @@
         if (item.type === "VIDEO") {
             container.innerHTML = `<video src="${item.fileUrl}" controls autoplay></video>`;
         } else {
-            container.innerHTML = `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}">`;
+            container.innerHTML = `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}" decoding="async">`;
         }
         document.getElementById("viewerOverlay").classList.add("active");
     }
@@ -910,7 +955,6 @@
         showViewer();
     }
 
-    // ----- Filter -----
     document.querySelectorAll("#filterTabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll("#filterTabs .tab-btn").forEach(b => b.classList.remove("active"));
@@ -921,7 +965,6 @@
         });
     });
 
-    // ----- Keyboard shortcuts -----
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             if (document.getElementById("viewerOverlay").classList.contains("active")) {
@@ -940,14 +983,12 @@
         }
     });
 
-    // ----- Helpers -----
     function escapeHTML(str) {
         const div = document.createElement("div");
         div.textContent = str || "";
         return div.innerHTML;
     }
 
-    // ----- Init -----
     loadMedia();
 </script>
 </body>

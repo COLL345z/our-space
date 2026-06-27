@@ -2,854 +2,630 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gallery · Our Space</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activities · Our Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         :root {
-            --bg-deep: #070709;
-            --bg-primary: #0c0c11;
-            --bg-secondary: #111118;
-            --bg-card: #181820;
-            --bg-input: #1e1e28;
-            --bg-hover: #22222e;
-            --accent: #e0a83b;
-            --accent-glow: rgba(224, 168, 59, 0.3);
-            --accent-soft: rgba(224, 168, 59, 0.08);
-            --accent-gradient: linear-gradient(135deg, #e0a83b 0%, #c48f28 60%, #a8781e 100%);
-            --text-primary: #eeeef2;
-            --text-secondary: #b0b0bb;
-            --text-muted: #787882;
-            --border-subtle: #1e1e2a;
-            --border-card: #1e1e2a;
-            --radius-xl: 20px;
-            --radius-lg: 14px;
+            --bg-deep: #060609;
+            --bg-card: #111118;
+            --bg-input: #181820;
+            --bg-hover: #1e1e2a;
+            --mustard: #e0a83b;
+            --mustard-glow: rgba(224,168,59,0.35);
+            --mustard-soft: rgba(224,168,59,0.08);
+            --rose: #e0887c;
+            --rose-glow: rgba(224,136,124,0.3);
+            --sky: #5db8d4;
+            --sky-soft: rgba(93,184,212,0.1);
+            --text-primary: #edeef2;
+            --text-secondary: #b0b3bd;
+            --text-muted: #6f727d;
+            --border-subtle: #1f1f2b;
+            --radius-lg: 16px;
             --radius-md: 10px;
-            --radius-sm: 8px;
-            --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
-            --shadow-md: 0 10px 28px rgba(0,0,0,0.5);
-            --shadow-sm: 0 4px 14px rgba(0,0,0,0.4);
-            --transition-fast: 0.15s ease;
-            --transition-smooth: 0.25s cubic-bezier(0.4,0,0.2,1);
-            --transition-bounce: 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            --shadow-md: 0 8px 20px rgba(0,0,0,0.5);
+            --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --font: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: var(--font);
             background: var(--bg-deep);
             color: var(--text-primary);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.01em;
-            overflow-x: hidden;
         }
 
-        ::-webkit-scrollbar { width:3px; }
+        ::-webkit-scrollbar { width:5px; }
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:#2a2a38; border-radius:10px; }
 
+        /* Header */
         .header {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 12px 16px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top:0; z-index:20;
-            backdrop-filter: blur(12px);
-        }
-        .header-left { display:flex; align-items:center; gap:10px; }
-        .header-icon {
-            width:32px; height:32px; border-radius:50%;
-            background: var(--accent-gradient);
-            display:flex; align-items:center; justify-content:center;
-            font-size:0.8rem; color:#000;
-            box-shadow:0 4px 16px var(--accent-glow);
-        }
-        .header h1 { font-size:1rem; font-weight:700; }
-        .header-stats {
-            background: var(--bg-input);
-            border:1px solid var(--border-card);
-            padding:4px 12px; border-radius:20px;
-            font-size:0.7rem; color:var(--text-muted);
-        }
-
-        .container { max-width:1100px; margin:0 auto; padding:12px 8px 40px; }
-
-        /* Upload button - floating style */
-        .upload-fab {
-            position:fixed; bottom:24px; right:16px; z-index:30;
-            background: var(--accent-gradient); border:none; color:#1a1000;
-            width:56px; height:56px; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            font-size:1.4rem; cursor:pointer;
-            box-shadow:0 8px 24px var(--accent-glow);
-            transition:all var(--transition-bounce);
-        }
-        .upload-fab:hover { transform:scale(1.05); }
-
-        /* Upload modal */
-        .upload-modal {
-            position:fixed; inset:0; z-index:100;
-            background:rgba(0,0,0,0.7);
-            backdrop-filter:blur(12px);
-            display:none; align-items:flex-end; justify-content:center;
-            padding:20px;
-        }
-        .upload-modal.active { display:flex; }
-        .upload-sheet {
-            background:var(--bg-card);
-            border:1px solid var(--border-card);
-            border-radius:var(--radius-xl) var(--radius-xl) 0 0;
-            padding:24px 20px 32px;
-            width:100%; max-width:500px;
-            max-height:80vh;
-            overflow-y:auto;
-            animation:slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { transform:translateY(100%); opacity:0; }
-            to { transform:translateY(0); opacity:1; }
-        }
-        .upload-sheet h3 {
-            font-size:0.9rem; font-weight:700; margin-bottom:16px;
-            display:flex; align-items:center; gap:8px;
-        }
-        .upload-sheet .form-group {
-            margin-bottom:14px;
-        }
-        .upload-sheet .form-group label {
-            display:block; font-size:0.65rem; font-weight:600;
-            color:var(--text-muted); text-transform:uppercase;
-            letter-spacing:0.04em; margin-bottom:4px;
-        }
-        .upload-sheet input, .upload-sheet select {
-            font-family:var(--font); font-size:0.85rem;
-            padding:10px 14px; border:1.5px solid var(--border-card);
-            border-radius:var(--radius-sm); background:var(--bg-input);
-            color:var(--text-primary); outline:none; width:100%;
-            transition:all var(--transition-fast);
-        }
-        .upload-sheet input:focus, .upload-sheet select:focus {
-            border-color:var(--accent);
-        }
-        .file-picker {
-            display:flex; align-items:center; gap:10px;
-            padding:12px 16px; background:var(--bg-input);
-            border:1.5px dashed var(--border-card);
-            border-radius:var(--radius-sm); color:var(--text-secondary);
-            font-size:0.85rem; cursor:pointer;
-            transition:all var(--transition-fast);
-        }
-        .file-picker:hover { border-color:var(--accent); color:var(--accent); }
-        .file-picker input { display:none; }
-        .upload-actions {
-            display:flex; gap:10px; margin-top:16px;
-        }
-        .upload-actions button {
-            flex:1; padding:12px; border-radius:var(--radius-sm);
-            font-weight:600; font-size:0.85rem; cursor:pointer;
-            transition:all var(--transition-fast);
-            font-family:var(--font);
-        }
-        .btn-cancel-upload {
-            background:none; border:1px solid var(--border-card);
-            color:var(--text-secondary);
-        }
-        .btn-submit-upload {
-            background:var(--accent-gradient); border:none;
-            color:#1a1000; box-shadow:0 4px 14px var(--accent-glow);
-        }
-        .btn-submit-upload:disabled {
-            opacity:0.5; cursor:not-allowed;
-        }
-
-        /* Grid - phone gallery style */
-        .media-grid {
-            display:grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap:4px;
-        }
-
-        .media-item {
-            position:relative;
-            aspect-ratio:1/1;
-            background:var(--bg-card);
-            overflow:hidden;
-            cursor:pointer;
-            border-radius:4px;
-            transition:transform 0.15s ease;
-        }
-        .media-item:active {
-            transform:scale(0.95);
-        }
-        .media-item img, .media-item video {
-            width:100%; height:100%; object-fit:cover;
-            display:block;
-        }
-        .media-item .overlay {
-            position:absolute; inset:0;
-            background:rgba(0,0,0,0);
-            transition:background 0.2s ease;
-            display:flex; align-items:center; justify-content:center;
-            opacity:0;
-            transition:all 0.2s ease;
-        }
-        .media-item .overlay.show {
-            background:rgba(0,0,0,0.5);
-            opacity:1;
-        }
-        .media-item .overlay .actions {
-            display:flex; gap:16px;
-        }
-        .media-item .overlay button {
-            background:rgba(255,255,255,0.15);
-            border:none; color:white;
-            width:44px; height:44px; border-radius:50%;
-            font-size:1.1rem; cursor:pointer;
-            backdrop-filter:blur(4px);
-            transition:all 0.2s ease;
-        }
-        .media-item .overlay button:hover {
-            background:rgba(255,255,255,0.25);
-            transform:scale(1.1);
-        }
-        .media-item .overlay .delete-btn {
-            color:#ff5e5e;
-        }
-        .media-item .overlay .share-btn {
-            color:#5db8d4;
-        }
-        .media-item .overlay .fav-btn.active {
-            color:var(--accent);
-        }
-        .media-item .badge {
-            position:absolute; top:6px; left:6px;
-            background:rgba(0,0,0,0.6);
-            backdrop-filter:blur(4px);
-            padding:2px 8px; border-radius:12px;
-            font-size:0.55rem; color:#aaa;
-            display:flex; align-items:center; gap:4px;
-            pointer-events:none;
-        }
-        .media-item .favorite-indicator {
-            position:absolute; top:6px; right:6px;
-            color:var(--accent); font-size:0.8rem;
-            text-shadow:0 0 10px rgba(224,168,59,0.5);
-            pointer-events:none;
-            display:none;
-        }
-        .media-item .favorite-indicator.show {
-            display:block;
-        }
-
-        /* Selection mode */
-        .media-item.selected {
-            outline:3px solid var(--accent);
-            outline-offset:-3px;
-        }
-        .media-item.selected .selection-check {
-            display:flex !important;
-        }
-        .selection-check {
-            position:absolute; top:6px; left:6px;
-            width:24px; height:24px; border-radius:50%;
-            background:var(--accent); color:#000;
-            display:none; align-items:center; justify-content:center;
-            font-size:0.7rem; font-weight:700;
-            z-index:5;
-        }
-
-        /* Selection toolbar */
-        .selection-toolbar {
-            position:fixed; bottom:0; left:0; right:0;
-            background:var(--bg-secondary);
-            border-top:1px solid var(--border-card);
-            padding:12px 16px;
-            display:none;
+            background: #0a0a10;
+            border-bottom:1px solid var(--border-subtle);
+            padding:16px 24px;
+            display:flex;
             align-items:center;
             justify-content:space-between;
-            z-index:40;
-            backdrop-filter:blur(12px);
+            flex-wrap:wrap;
+            gap:12px;
+            position:sticky;
+            top:0;
+            z-index:20;
+            backdrop-filter:blur(8px);
         }
-        .selection-toolbar.active {
+        .header-left {
             display:flex;
+            align-items:center;
+            gap:12px;
         }
-        .selection-toolbar .count {
-            font-size:0.85rem; font-weight:600;
+        .header-icon {
+            width:38px; height:38px;
+            border-radius:50%;
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            display:flex; align-items:center; justify-content:center;
+            color:#000; font-size:1rem;
+            box-shadow:0 4px 16px var(--mustard-glow);
         }
-        .selection-toolbar .actions {
-            display:flex; gap:12px;
+        .header h1 {
+            font-size:1.2rem; font-weight:700;
         }
-        .selection-toolbar .actions button {
-            background:none; border:none; color:var(--text-secondary);
-            font-size:0.85rem; cursor:pointer; padding:6px 12px;
-            border-radius:6px; transition:all 0.2s;
-            display:flex; align-items:center; gap:6px;
+        .header-stats {
+            font-size:0.8rem;
+            color:var(--text-muted);
+            background:var(--bg-input);
+            padding:6px 14px;
+            border-radius:20px;
+            border:1px solid var(--border-subtle);
+        }
+
+        .container {
+            max-width:1100px;
+            margin:0 auto;
+            padding:24px 20px 40px;
+        }
+
+        /* Add button */
+        .add-bar {
+            display:flex;
+            justify-content:center;
+            margin-bottom:20px;
+        }
+        .btn-add {
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            border:none;
+            color:#1a1000;
+            font-weight:700;
+            padding:12px 28px;
+            border-radius:40px;
+            cursor:pointer;
+            font-size:0.9rem;
+            display:flex; align-items:center; gap:8px;
+            box-shadow:0 6px 18px var(--mustard-glow);
+            transition:all var(--transition-smooth);
             font-family:var(--font);
         }
-        .selection-toolbar .actions button:hover {
-            background:var(--bg-hover);
-        }
-        .selection-toolbar .actions .delete-selected {
-            color:#ff5e5e;
-        }
-        .selection-toolbar .actions .share-selected {
-            color:#5db8d4;
+        .btn-add:hover {
+            transform:translateY(-2px);
+            box-shadow:0 12px 28px rgba(224,168,59,0.5);
+            filter:brightness(1.08);
         }
 
-        /* Fullscreen viewer */
-        .viewer-overlay {
-            position:fixed; inset:0; z-index:50;
-            background:rgba(0,0,0,0.95);
-            backdrop-filter:blur(20px);
+        /* Form panel */
+        .form-panel {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            border-radius:var(--radius-lg);
+            padding:24px;
+            margin-bottom:24px;
             display:none;
-            align-items:center; justify-content:center;
-            padding:20px;
+            box-shadow:var(--shadow-md);
         }
-        .viewer-overlay.active { display:flex; }
-        .viewer-content {
-            position:relative;
-            max-width:95vw; max-height:90vh;
-            display:flex; align-items:center; justify-content:center;
+        .form-panel.visible { display:block; }
+        .form-title {
+            font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em;
+            color:var(--text-muted); font-weight:600; margin-bottom:18px;
         }
-        .viewer-content img, .viewer-content video {
-            max-width:95vw; max-height:85vh;
-            object-fit:contain;
+        .form-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+        }
+        .form-group { display:flex; flex-direction:column; gap:5px; }
+        .form-group label {
+            font-size:0.7rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:0.04em;
+        }
+        input, select {
+            font-family:var(--font); font-size:0.85rem;
+            padding:10px 14px;
+            border:1.5px solid var(--border-subtle);
             border-radius:8px;
+            background:var(--bg-input);
+            color:var(--text-primary);
+            outline:none;
         }
-        .viewer-close {
-            position:absolute; top:10px; right:10px;
-            background:rgba(0,0,0,0.5); border:none;
-            color:white; width:40px; height:40px;
-            border-radius:50%; font-size:1.2rem;
-            cursor:pointer; display:flex; align-items:center; justify-content:center;
+        input:focus, select:focus {
+            border-color:var(--mustard);
+            box-shadow:0 0 0 3px rgba(224,168,59,0.08);
         }
-        .viewer-nav {
-            position:absolute; top:50%; transform:translateY(-50%);
-            background:rgba(0,0,0,0.3); border:none;
-            color:white; width:40px; height:40px;
-            border-radius:50%; font-size:1.2rem;
-            cursor:pointer; display:flex; align-items:center; justify-content:center;
+        .form-actions {
+            grid-column:span 2;
+            display:flex; gap:10px; justify-content:flex-end; margin-top:8px;
         }
-        .viewer-nav.prev { left:10px; }
-        .viewer-nav.next { right:10px; }
+        .btn-cancel {
+            background:none; border:1px solid var(--border-subtle);
+            color:var(--text-secondary); padding:10px 20px; border-radius:8px;
+            cursor:pointer; font-family:var(--font); font-weight:500;
+        }
+        .btn-save {
+            background:linear-gradient(135deg, #e0a83b, #c48f28);
+            border:none; color:#1a1000; font-weight:700;
+            padding:10px 24px; border-radius:8px; cursor:pointer;
+            font-family:var(--font);
+            box-shadow:0 4px 12px var(--mustard-glow);
+        }
 
-        /* Long press indicator */
-        .long-press-hint {
-            position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
-            background:rgba(0,0,0,0.8);
-            backdrop-filter:blur(8px);
-            padding:8px 16px; border-radius:20px;
-            font-size:0.7rem; color:var(--text-muted);
-            z-index:25;
-            display:none;
-            animation:fadeInOut 2s ease;
+        /* Filter pills */
+        .filter-bar {
+            display:flex;
+            justify-content:center;
+            gap:10px;
+            margin-bottom:24px;
+            flex-wrap:wrap;
         }
-        @keyframes fadeInOut {
-            0% { opacity:0; transform:translateX(-50%) translateY(10px); }
-            20% { opacity:1; transform:translateX(-50%) translateY(0); }
-            80% { opacity:1; transform:translateX(-50%) translateY(0); }
-            100% { opacity:0; transform:translateX(-50%) translateY(-10px); }
+        .filter-pill {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            color:var(--text-secondary);
+            padding:8px 18px;
+            border-radius:30px;
+            cursor:pointer;
+            font-size:0.8rem;
+            font-weight:500;
+            transition:all 0.15s;
+        }
+        .filter-pill:hover { background:var(--bg-hover); }
+        .filter-pill.active {
+            background:var(--mustard-soft);
+            border-color:var(--mustard);
+            color:var(--mustard);
+            font-weight:600;
+        }
+
+        /* Grid */
+        .grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap:18px;
+        }
+
+        /* Card */
+        .card {
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            border-radius:var(--radius-lg);
+            padding:18px;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            transition:all var(--transition-smooth);
+            box-shadow:0 4px 12px rgba(0,0,0,0.4);
+        }
+        .card:hover {
+            border-color:#2e2e3c;
+            transform:translateY(-3px);
+            box-shadow:0 12px 28px rgba(0,0,0,0.6);
+        }
+        .card-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+        }
+        .card-title {
+            font-weight:700;
+            font-size:1rem;
+            color:var(--text-primary);
+        }
+        .badge {
+            font-size:0.7rem;
+            font-weight:600;
+            padding:4px 12px;
+            border-radius:20px;
+            text-transform:uppercase;
+            letter-spacing:0.03em;
+        }
+        .badge.PLANNED {
+            background:rgba(224,168,59,0.15);
+            color:var(--mustard);
+        }
+        .badge.COMPLETED {
+            background:rgba(60,184,120,0.15);
+            color:#3cb878;
+        }
+        .card-desc {
+            font-size:0.85rem;
+            color:var(--text-secondary);
+            line-height:1.4;
+        }
+        .card-meta {
+            display:flex;
+            align-items:center;
+            gap:12px;
+            font-size:0.75rem;
+            color:var(--text-muted);
+            flex-wrap:wrap;
+        }
+        .card-meta i { font-size:0.7rem; margin-right:3px; }
+
+        /* Rating area */
+        .rating-row {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .rating-label {
+            font-size:0.75rem;
+            font-weight:600;
+            color:var(--text-muted);
+            width:70px;
+        }
+        .stars {
+            display:flex;
+            gap:2px;
+        }
+        .star {
+            cursor:pointer;
+            font-size:1rem;
+            color:#3a3a46;
+            transition:color 0.1s;
+        }
+        .star.filled { color:var(--mustard); }
+        .star:hover { color:var(--mustard); }
+
+        .card-actions {
+            display:flex;
+            gap:10px;
+            margin-top:auto;
+        }
+        .btn-done, .btn-delete {
+            background:none;
+            border:1px solid var(--border-subtle);
+            padding:6px 12px;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:0.75rem;
+            font-weight:600;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            transition:all 0.15s;
+        }
+        .btn-done {
+            color:var(--mustard);
+            border-color:rgba(224,168,59,0.4);
+        }
+        .btn-done:hover {
+            background:rgba(224,168,59,0.1);
+            border-color:var(--mustard);
+        }
+        .btn-delete {
+            color:#e0887c;
+            border-color:rgba(224,136,124,0.4);
+        }
+        .btn-delete:hover {
+            background:rgba(224,136,124,0.1);
+            border-color:var(--rose);
         }
 
         .empty-state {
-            grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);
+            grid-column:1/-1;
+            text-align:center;
+            padding:60px 20px;
+            color:var(--text-muted);
         }
-        .empty-state .icon {
-            font-size:3rem; margin-bottom:12px; opacity:0.5;
-        }
-
-        @media (min-width: 600px) {
-            .media-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap:6px;
-            }
-        }
-        @media (min-width: 900px) {
-            .media-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap:8px;
-            }
-        }
+        .empty-state i { font-size:2.5rem; margin-bottom:12px; opacity:0.7; }
+        .empty-state h3 { font-size:1.1rem; color:var(--text-primary); margin-bottom:6px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="header-left">
-        <div class="header-icon"><i class="fa-solid fa-images"></i></div>
-        <h1>Gallery</h1>
-    </div>
-    <div class="header-stats" id="mediaCount">0 items</div>
-</div>
-
-<div class="container">
-    <div class="media-grid" id="mediaGrid"></div>
-</div>
-
-<!-- Floating upload button -->
-<button class="upload-fab" id="uploadFab"><i class="fa-solid fa-plus"></i></button>
-
-<!-- Upload modal -->
-<div class="upload-modal" id="uploadModal">
-    <div class="upload-sheet">
-        <h3><i class="fa-solid fa-cloud-arrow-up"></i> Add to Gallery</h3>
-        <div class="form-group">
-            <label>Title</label>
-            <input type="text" id="titleInput" placeholder="What's this memory?">
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h1>Activities</h1>
         </div>
-        <div class="form-group">
-            <label>Type</label>
-            <select id="typeInput">
-                <option value="IMAGE">Photo</option>
-                <option value="VIDEO">Video</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Choose files</label>
-            <label class="file-picker" id="filePicker">
-                <i class="fa-solid fa-folder-open"></i>
-                <span id="fileLabel">Select from gallery</span>
-                <input type="file" id="filesInput" accept="image/*,video/*" multiple>
-            </label>
-            <div id="fileCount" style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"></div>
-        </div>
-        <div class="upload-actions">
-            <button class="btn-cancel-upload" onclick="closeUpload()">Cancel</button>
-            <button class="btn-submit-upload" id="uploadBtn" onclick="uploadMedia()">
-                <i class="fa-solid fa-upload"></i> Upload
-            </button>
-        </div>
+        <div class="header-stats" id="statsDisplay">0 adventures</div>
     </div>
-</div>
 
-<!-- Selection toolbar -->
-<div class="selection-toolbar" id="selectionToolbar">
-    <span class="count" id="selectionCount">0 selected</span>
-    <div class="actions">
-        <button onclick="shareSelected()"><i class="fa-solid fa-share-nodes"></i> Share</button>
-        <button class="delete-selected" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Delete</button>
+    <div class="container">
+        <div class="add-bar">
+            <button class="btn-add" id="btnToggleForm"><i class="fa-solid fa-plus"></i> New activity</button>
+        </div>
+
+        <!-- Add form (no category, no image, no rating) -->
+        <div class="form-panel" id="formPanel">
+            <div class="form-title">✨ Plan something fun</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="titleInput" placeholder="Movie night, hike...">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="descInput" placeholder="What's the plan?">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="dateInput">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-cancel" id="btnCancelForm">Cancel</button>
+                    <button class="btn-save" id="btnSaveActivity">Save Activity</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="filter-bar">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="PLANNED">Planned</button>
+            <button class="filter-pill" data-filter="COMPLETED">Completed</button>
+        </div>
+
+        <div class="grid" id="activitiesGrid"></div>
     </div>
-</div>
 
-<!-- Fullscreen viewer -->
-<div class="viewer-overlay" id="viewerOverlay" onclick="closeViewer()">
-    <div class="viewer-content" onclick="event.stopPropagation()">
-        <button class="viewer-close" onclick="closeViewer()"><i class="fa-solid fa-xmark"></i></button>
-        <button class="viewer-nav prev" onclick="event.stopPropagation(); navigateViewer(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="viewer-nav next" onclick="event.stopPropagation(); navigateViewer(1)"><i class="fa-solid fa-chevron-right"></i></button>
-        <div id="viewerMedia"></div>
-    </div>
-</div>
+    <script>
+        (function() {
+            const API = "/api/activities";
+            let allActivities = [];
+            let currentFilter = 'all';
 
-<!-- Long press hint -->
-<div class="long-press-hint" id="longPressHint">Hold to select multiple</div>
+            const grid = document.getElementById('activitiesGrid');
+            const statsDisplay = document.getElementById('statsDisplay');
+            const formPanel = document.getElementById('formPanel');
+            const btnToggleForm = document.getElementById('btnToggleForm');
+            const btnCancelForm = document.getElementById('btnCancelForm');
+            const btnSaveActivity = document.getElementById('btnSaveActivity');
+            const filterPills = document.querySelectorAll('.filter-pill');
 
-<script>
-    // const API = "http://localhost:8080/api/gallery";
-    const API = "https://our-space-htoh.onrender.com/api/gallery";
-    
-    let allMedia = [];
-    let currentFilter = "all";
-    let selectedIds = new Set();
-    let isSelectMode = false;
-    let longPressTimer = null;
-    let viewerIndex = 0;
+            const titleInput = document.getElementById('titleInput');
+            const descInput = document.getElementById('descInput');
+            const dateInput = document.getElementById('dateInput');
 
-    // ----- Upload -----
-    document.getElementById("filesInput").addEventListener("change", function(e) {
-        const files = e.target.files;
-        const label = document.getElementById("fileLabel");
-        const count = document.getElementById("fileCount");
-        if (files.length > 0) {
-            label.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
-            count.textContent = `${files.length} file${files.length > 1 ? 's' : ''} ready to upload`;
-        } else {
-            label.textContent = "Select from gallery";
-            count.textContent = "";
-        }
-    });
-
-    document.getElementById("uploadFab").addEventListener("click", () => {
-        document.getElementById("uploadModal").classList.add("active");
-    });
-
-    function closeUpload() {
-        document.getElementById("uploadModal").classList.remove("active");
-        document.getElementById("titleInput").value = "";
-        document.getElementById("filesInput").value = "";
-        document.getElementById("fileLabel").textContent = "Select from gallery";
-        document.getElementById("fileCount").textContent = "";
-    }
-
-    async function uploadMedia() {
-        const title = document.getElementById("titleInput").value.trim() || "Untitled";
-        const type = document.getElementById("typeInput").value;
-        const files = document.getElementById("filesInput").files;
-
-        if (files.length === 0) {
-            alert("Please select at least one file.");
-            return;
-        }
-
-        const btn = document.getElementById("uploadBtn");
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
-
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("type", type);
-        for (let f of files) {
-            formData.append("files", f);
-        }
-
-        try {
-            const res = await fetch(API, {
-                method: "POST",
-                body: formData
+            // Toggle form
+            btnToggleForm.addEventListener('click', () => {
+                formPanel.classList.add('visible');
+                btnToggleForm.style.display = 'none';
             });
-            if (!res.ok) throw new Error("Upload failed");
-            closeUpload();
-            loadMedia();
-        } catch (e) {
-            alert("Upload failed. Please try again.");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
-        }
-    }
+            btnCancelForm.addEventListener('click', closeForm);
 
-    // ----- Load & Render -----
-    async function loadMedia() {
-        try {
-            let url = API;
-            if (currentFilter === "IMAGE" || currentFilter === "VIDEO") {
-                url = `${API}/type/${currentFilter}`;
-            } else if (currentFilter === "favorites") {
-                url = `${API}/favorites`;
+            function closeForm() {
+                formPanel.classList.remove('visible');
+                btnToggleForm.style.display = 'flex';
+                titleInput.value = '';
+                descInput.value = '';
+                dateInput.value = '';
             }
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Failed");
-            allMedia = await res.json();
-            renderGrid();
-        } catch (e) {
-            document.getElementById("mediaGrid").innerHTML = `
-                <div class="empty-state">
-                    <div class="icon"><i class="fa-solid fa-camera-retro"></i></div>
-                    <h3>No memories yet</h3>
-                    <p>Tap the + button to add photos & videos.</p>
-                </div>
-            `;
-            document.getElementById("mediaCount").textContent = "0 items";
-        }
-    }
 
-    function renderGrid() {
-        const grid = document.getElementById("mediaGrid");
-        document.getElementById("mediaCount").textContent = `${allMedia.length} item${allMedia.length !== 1 ? 's' : ''}`;
+            async function loadActivities(filter = 'all') {
+                let url = API;
+                if (filter === 'PLANNED' || filter === 'COMPLETED') url = `${API}/status/${filter}`;
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Failed');
+                    allActivities = await res.json();
+                } catch (e) {
+                    console.warn('Could not load activities.', e);
+                    allActivities = [];
+                }
+                render();
+                updateStats();
+            }
 
-        if (!allMedia.length) {
-            grid.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon"><i class="fa-solid fa-camera-retro"></i></div>
-                    <h3>No memories yet</h3>
-                    <p>Tap the + button to add photos & videos.</p>
-                </div>
-            `;
-            return;
-        }
+            function render() {
+                if (!allActivities.length) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                            <h3>No activities yet</h3>
+                            <p>Plan your first date or adventure together.</p>
+                        </div>`;
+                    return;
+                }
 
-        grid.innerHTML = allMedia.map((item, index) => {
-            const isVideo = item.type === "VIDEO";
-            const isSelected = selectedIds.has(item.id);
-            const isFavorite = item.favorite || false;
+                grid.innerHTML = allActivities.map(act => {
+                    const statusClass = act.status;
+                    const isCompleted = act.status === 'COMPLETED';
+                    const ratingR = act.ratingRehema || 0;
+                    const ratingC = act.ratingCollins || 0;
 
-            return `
-                <div class="media-item ${isSelected ? 'selected' : ''}" 
-                     data-id="${item.id}" 
-                     data-index="${index}"
-                     ontouchstart="handleTouchStart(event, ${item.id})"
-                     ontouchend="handleTouchEnd(event)"
-                     onmousedown="handleMouseDown(event, ${item.id})"
-                     onmouseup="handleMouseUp(event)"
-                     onmouseleave="handleMouseLeave()"
-                     onclick="handleClick(event, ${item.id})">
-                    ${isVideo ? 
-                        `<video src="${item.fileUrl}" muted preload="metadata"></video>` : 
-                        `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}" loading="lazy">`
-                    }
-                    <div class="badge">
-                        <i class="fa-solid ${isVideo ? 'fa-video' : 'fa-image'}"></i>
-                        ${isVideo ? 'Video' : 'Photo'}
-                    </div>
-                    <div class="favorite-indicator ${isFavorite ? 'show' : ''}">
-                        <i class="fa-solid fa-heart"></i>
-                    </div>
-                    <div class="selection-check">✓</div>
-                    <div class="overlay" id="overlay-${item.id}">
-                        <div class="actions">
-                            <button class="fav-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${item.id})">
-                                <i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>
-                            </button>
-                            <button class="share-btn" onclick="event.stopPropagation(); shareItem(${item.id})">
-                                <i class="fa-solid fa-share-nodes"></i>
-                            </button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteItem(${item.id})">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                    // Build stars HTML for each person
+                    const buildStars = (person, currentRating) => {
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += `<i class="fa-star star ${i <= currentRating ? 'fas filled' : 'far'}" 
+                                data-id="${act.id}" data-person="${person}" data-value="${i}"></i>`;
+                        }
+                        return starsHtml;
+                    };
+
+                    const ratingSection = isCompleted ? `
+                        <div class="rating-row">
+                            <span class="rating-label">Rehema</span>
+                            <div class="stars">${buildStars('rehema', ratingR)}</div>
                         </div>
-                    </div>
-                </div>
-            `;
-        }).join("");
-    }
+                        <div class="rating-row">
+                            <span class="rating-label">Collins</span>
+                            <div class="stars">${buildStars('collins', ratingC)}</div>
+                        </div>` : '';
 
-    // ----- Touch / Mouse for long press -----
-    let pressTimer = null;
-    let isLongPress = false;
-    let currentPressId = null;
+                    return `
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title">${escapeHTML(act.title || 'Untitled')}</span>
+                                <span class="badge ${statusClass}">${act.status}</span>
+                            </div>
+                            <div class="card-desc">${escapeHTML(act.description || '')}</div>
+                            <div class="card-meta">
+                                <span><i class="fa-regular fa-calendar"></i> ${act.date || '—'}</span>
+                            </div>
+                            ${ratingSection}
+                            <div class="card-actions">
+                                ${!isCompleted ? `
+                                    <button class="btn-done" data-id="${act.id}" data-action="done">
+                                        <i class="fa-solid fa-circle-check"></i> Done
+                                    </button>` : ''}
+                                <button class="btn-delete" data-id="${act.id}" data-action="delete">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>`;
+                }).join('');
 
-    function handleTouchStart(e, id) {
-        isLongPress = false;
-        currentPressId = id;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(() => {
-            isLongPress = true;
-            enterSelectMode(id);
-        }, 500);
-    }
+                // Attach event listeners
+                document.querySelectorAll('[data-action="done"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = btn.dataset.id;
+                        markDone(id);
+                    });
+                });
+                document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = btn.dataset.id;
+                        deleteActivity(id);
+                    });
+                });
 
-    function handleTouchEnd(e) {
-        clearTimeout(pressTimer);
-        if (!isLongPress) {
-            // Short tap handled by onclick
-        }
-        isLongPress = false;
-    }
-
-    function handleMouseDown(e, id) {
-        isLongPress = false;
-        currentPressId = id;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(() => {
-            isLongPress = true;
-            enterSelectMode(id);
-        }, 500);
-    }
-
-    function handleMouseUp(e) {
-        clearTimeout(pressTimer);
-        isLongPress = false;
-    }
-
-    function handleMouseLeave() {
-        clearTimeout(pressTimer);
-        isLongPress = false;
-    }
-
-    function handleClick(e, id) {
-        if (isLongPress) return;
-        if (isSelectMode) {
-            toggleSelect(id);
-        } else {
-            openViewer(id);
-        }
-    }
-
-    // ----- Selection Mode -----
-    function enterSelectMode(id) {
-        isSelectMode = true;
-        toggleSelect(id);
-        document.getElementById("selectionToolbar").classList.add("active");
-        document.getElementById("longPressHint").style.display = "block";
-        setTimeout(() => {
-            document.getElementById("longPressHint").style.display = "none";
-        }, 2000);
-    }
-
-    function toggleSelect(id) {
-        if (selectedIds.has(id)) {
-            selectedIds.delete(id);
-        } else {
-            selectedIds.add(id);
-        }
-        updateSelectionUI();
-    }
-
-    function updateSelectionUI() {
-        const count = selectedIds.size;
-        document.getElementById("selectionCount").textContent = `${count} selected`;
-        if (count === 0) {
-            isSelectMode = false;
-            document.getElementById("selectionToolbar").classList.remove("active");
-        }
-        // Update grid items
-        document.querySelectorAll(".media-item").forEach(el => {
-            const id = parseInt(el.dataset.id);
-            el.classList.toggle("selected", selectedIds.has(id));
-        });
-    }
-
-    function clearSelection() {
-        selectedIds.clear();
-        isSelectMode = false;
-        document.getElementById("selectionToolbar").classList.remove("active");
-        document.querySelectorAll(".media-item").forEach(el => el.classList.remove("selected"));
-    }
-
-    // ----- Delete -----
-    async function deleteItem(id) {
-        if (!confirm("Delete this item?")) return;
-        try {
-            await fetch(`${API}/${id}`, { method: "DELETE" });
-            selectedIds.delete(id);
-            await loadMedia();
-            if (selectedIds.size === 0) {
-                document.getElementById("selectionToolbar").classList.remove("active");
+                // Star click events
+                document.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', async (e) => {
+                        const id = star.dataset.id;
+                        const person = star.dataset.person;
+                        const value = parseInt(star.dataset.value);
+                        await updateRating(id, person, value);
+                    });
+                });
             }
-        } catch (e) {
-            alert("Delete failed.");
-        }
-    }
 
-    async function deleteSelected() {
-        if (selectedIds.size === 0) return;
-        if (!confirm(`Delete ${selectedIds.size} selected item${selectedIds.size > 1 ? 's' : ''}?`)) return;
-        
-        const ids = Array.from(selectedIds);
-        for (let id of ids) {
-            try {
-                await fetch(`${API}/${id}`, { method: "DELETE" });
-            } catch (e) {}
-        }
-        selectedIds.clear();
-        await loadMedia();
-        document.getElementById("selectionToolbar").classList.remove("active");
-    }
-
-    // ----- Favorite -----
-    async function toggleFavorite(id) {
-        try {
-            await fetch(`${API}/${id}/favorite`, { method: "PUT" });
-            await loadMedia();
-        } catch (e) {
-            alert("Failed to update favorite.");
-        }
-    }
-
-    // ----- Share -----
-    function shareItem(id) {
-        const item = allMedia.find(m => m.id === id);
-        if (!item) return;
-        if (navigator.share) {
-            navigator.share({
-                title: item.title || "Our Space memory",
-                url: item.fileUrl
-            }).catch(() => {});
-        } else {
-            // Fallback - copy to clipboard
-            navigator.clipboard.writeText(item.fileUrl).then(() => {
-                alert("Link copied to clipboard!");
-            }).catch(() => {
-                prompt("Copy this URL:", item.fileUrl);
-            });
-        }
-    }
-
-    function shareSelected() {
-        if (selectedIds.size === 0) return;
-        const items = allMedia.filter(m => selectedIds.has(m.id));
-        const urls = items.map(m => m.fileUrl).join("\n");
-        if (navigator.share) {
-            navigator.share({
-                title: "Our Space memories",
-                text: `Check out these ${items.length} memories from Our Space!`,
-                url: urls
-            }).catch(() => {});
-        } else {
-            navigator.clipboard.writeText(urls).then(() => {
-                alert(`${items.length} links copied to clipboard!`);
-            }).catch(() => {
-                prompt("Copy these URLs:", urls);
-            });
-        }
-    }
-
-    // ----- Viewer -----
-    function openViewer(id) {
-        const idx = allMedia.findIndex(m => m.id === id);
-        if (idx === -1) return;
-        viewerIndex = idx;
-        showViewer();
-    }
-
-    function showViewer() {
-        const item = allMedia[viewerIndex];
-        if (!item) return;
-        const container = document.getElementById("viewerMedia");
-        if (item.type === "VIDEO") {
-            container.innerHTML = `<video src="${item.fileUrl}" controls autoplay></video>`;
-        } else {
-            container.innerHTML = `<img src="${item.fileUrl}" alt="${escapeHTML(item.title)}">`;
-        }
-        document.getElementById("viewerOverlay").classList.add("active");
-    }
-
-    function closeViewer() {
-        document.getElementById("viewerOverlay").classList.remove("active");
-        document.getElementById("viewerMedia").innerHTML = "";
-    }
-
-    function navigateViewer(direction) {
-        viewerIndex = (viewerIndex + direction + allMedia.length) % allMedia.length;
-        showViewer();
-    }
-
-    // ----- Filter -----
-    document.querySelectorAll("#filterTabs .tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll("#filterTabs .tab-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentFilter = btn.dataset.filter;
-            clearSelection();
-            loadMedia();
-        });
-    });
-
-    // ----- Keyboard shortcuts -----
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            if (document.getElementById("viewerOverlay").classList.contains("active")) {
-                closeViewer();
-            } else if (document.getElementById("uploadModal").classList.contains("active")) {
-                closeUpload();
-            } else if (selectedIds.size > 0) {
-                clearSelection();
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
             }
-        }
-        if (e.key === "ArrowLeft" && document.getElementById("viewerOverlay").classList.contains("active")) {
-            navigateViewer(-1);
-        }
-        if (e.key === "ArrowRight" && document.getElementById("viewerOverlay").classList.contains("active")) {
-            navigateViewer(1);
-        }
-    });
 
-    // ----- Helpers -----
-    function escapeHTML(str) {
-        const div = document.createElement("div");
-        div.textContent = str || "";
-        return div.innerHTML;
-    }
+            function updateStats() {
+                const total = allActivities.length;
+                const planned = allActivities.filter(a => a.status === 'PLANNED').length;
+                const completed = allActivities.filter(a => a.status === 'COMPLETED').length;
+                statsDisplay.textContent = `${total} adventures · ${planned} planned · ${completed} done`;
+            }
 
-    // ----- Init -----
-    loadMedia();
-</script>
+            // Add activity
+            btnSaveActivity.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter a title.');
+                    return;
+                }
+                const newActivity = {
+                    title: title,
+                    description: descInput.value.trim(),
+                    date: dateInput.value,
+                    status: 'PLANNED',       // always planned when adding
+                    ratingRehema: 0,
+                    ratingCollins: 0
+                };
+                try {
+                    const res = await fetch(API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newActivity)
+                    });
+                    if (!res.ok) throw new Error('Add failed');
+                    closeForm();
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Could not add activity.');
+                }
+            });
+
+            // Delete
+            async function deleteActivity(id) {
+                if (!confirm('Delete this activity?')) return;
+                try {
+                    await fetch(`${API}/${id}`, { method: 'DELETE' });
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Delete failed.');
+                }
+            }
+
+            // Mark done (set status to COMPLETED)
+            async function markDone(id) {
+                const activity = allActivities.find(a => a.id == id);
+                if (!activity) return;
+                const updated = { ...activity, status: 'COMPLETED' };
+                try {
+                    await fetch(`${API}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    await loadActivities(currentFilter);
+                } catch (e) {
+                    alert('Could not update status.');
+                }
+            }
+
+            // Update rating
+            async function updateRating(id, person, value) {
+                const activity = allActivities.find(a => a.id == id);
+                if (!activity) return;
+                const updated = { ...activity };
+                if (person === 'rehema') updated.ratingRehema = value;
+                else updated.ratingCollins = value;
+
+                try {
+                    await fetch(`${API}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    // Update local data to reflect immediately
+                    const idx = allActivities.findIndex(a => a.id == id);
+                    if (idx !== -1) {
+                        if (person === 'rehema') allActivities[idx].ratingRehema = value;
+                        else allActivities[idx].ratingCollins = value;
+                    }
+                    // Re-render to update star display
+                    render();
+                } catch (e) {
+                    alert('Rating update failed.');
+                }
+            }
+
+            // Filter handling
+            filterPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    filterPills.forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    currentFilter = pill.dataset.filter;
+                    loadActivities(currentFilter);
+                });
+            });
+
+            // Initial load
+            loadActivities('all');
+        })();
+    </script>
 </body>
 </html>
