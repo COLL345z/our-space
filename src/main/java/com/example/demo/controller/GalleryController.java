@@ -11,13 +11,12 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/gallery")
-// @CrossOrigin(origins = "*")
 public class GalleryController {
 
     private final GalleryRepository repo;
     private final Cloudinary cloudinary;
 
-    public GalleryController(GalleryRepository repo, Cloudinary cloudinary) {
+    public GalleryController(GalleryController repo, Cloudinary cloudinary) {
         this.repo = repo;
         this.cloudinary = cloudinary;
     }
@@ -44,7 +43,6 @@ public class GalleryController {
         return repo.save(item);
     }
 
-    // ✅ CLOUDINARY UPLOAD
     @PostMapping(consumes = "multipart/form-data")
     public List<GalleryItem> uploadMultiple(
             @RequestParam("title") String title,
@@ -52,21 +50,44 @@ public class GalleryController {
             @RequestParam("files") MultipartFile[] files) throws Exception {
 
         List<GalleryItem> saved = new ArrayList<>();
+        Set<String> existingHashes = new HashSet<>();
+        
+        // Get existing file hashes to detect duplicates
+        for (GalleryItem existing : repo.findAll()) {
+            if (existing.getFileHash() != null) {
+                existingHashes.add(existing.getFileHash());
+            }
+        }
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
 
+            // Generate hash for duplicate detection
+            byte[] bytes = file.getBytes();
+            String hash = Base64.getEncoder().encodeToString(
+                Arrays.copyOfRange(bytes, 0, Math.min(bytes.length, 1024))
+            );
+
+            // Skip duplicate
+            if (existingHashes.contains(hash)) {
+                continue;
+            }
+
             Map uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.emptyMap()
+                    bytes,
+                    ObjectUtils.asMap(
+                        "folder", "our-space-gallery",
+                        "resource_type", "auto"
+                    )
             );
 
             String url = uploadResult.get("secure_url").toString();
 
             GalleryItem item = new GalleryItem();
             item.setTitle(title);
-            item.setType(type);
+            item.setType(type.toUpperCase());
             item.setFileUrl(url);
+            item.setFileHash(hash);
 
             saved.add(repo.save(item));
         }
