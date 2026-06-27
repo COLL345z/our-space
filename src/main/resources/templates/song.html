@@ -555,6 +555,8 @@ function notifyDashboard(song, playing) {
             const res = await fetch(API);
             if (!res.ok) throw new Error('Fetch failed');
             songs = await res.json();
+            // ★ NEW: sort newest first (by id descending)
+            songs.sort((a, b) => b.id - a.id);
         } catch (e) { console.warn('Could not load songs.', e); }
         renderList();
     }
@@ -760,10 +762,12 @@ function notifyDashboard(song, playing) {
             console.warn('API add failed. Appending locally.', e);
             song.id = Date.now();
             songs.push(song);
+            // ★ sort local list too
+            songs.sort((a, b) => b.id - a.id);
         }
 
         document.getElementById("formOverlay").classList.remove("active");
-        await loadSongs();
+        await loadSongs(); // reload and sort from API
         // ❌ Do NOT auto‑play the newly added song
     }
 
