@@ -423,39 +423,37 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Choose from Gallery</label>
+            <label>Choose from your phone</label>
             <div style="display:flex; flex-direction:column; gap:8px;">
-                <!-- 
-                  ⭐ FIX: Using explicit extensions (.jpg,.jpeg,.png,.webp,.gif) 
-                  instead of just "image/*" makes Android show the native file-picker 
-                  instead of jumping directly to Google Photos.
-                -->
-                <label class="file-picker" id="photoPicker" style="border-color: rgba(93,184,212,0.4);">
+                <!-- OPTION A: Specific image picker (may still open Google Photos if set as default) -->
+                <label class="file-picker" style="border-color: rgba(93,184,212,0.4);">
                     <i class="fa-solid fa-image" style="color:#5db8d4;"></i>
-                    <span>📷 Select Photos</span>
+                    <span>📷 Photos (quick pick)</span>
                     <input type="file" id="photoInput" 
                            accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" 
                            multiple>
                 </label>
-                <label class="file-picker" id="videoPicker" style="border-color: rgba(224,168,59,0.4);">
+                <!-- OPTION B: Specific video picker -->
+                <label class="file-picker" style="border-color: rgba(224,168,59,0.4);">
                     <i class="fa-solid fa-video" style="color:#e0a83b;"></i>
-                    <span>🎬 Select Videos</span>
+                    <span>🎬 Videos (quick pick)</span>
                     <input type="file" id="videoInput" 
                            accept=".mp4,.mov,.webm,.mkv,.3gp,video/mp4,video/quicktime,video/webm,video/x-matroska,video/3gpp" 
                            multiple>
                 </label>
-                <label class="file-picker" id="allPicker" style="border-color: rgba(60,184,120,0.4);">
+                <!-- ⭐ OPTION C: Browse all files – opens phone's file manager, NOT Google Photos -->
+                <label class="file-picker" style="border-color: rgba(60,184,120,0.6); border-width:2px;">
                     <i class="fa-solid fa-folder-open" style="color:#3cb878;"></i>
-                    <span>📁 Select All Media</span>
-                    <input type="file" id="allInput" 
-                           accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm,.mkv,.3gp,image/*,video/*" 
+                    <span>📁 Browse Files (if Google Photos keeps opening)</span>
+                    <input type="file" id="allFilesInput" 
+                           accept="*/*" 
                            multiple>
                 </label>
             </div>
             <div id="fileCount" style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"></div>
             <p style="font-size:0.6rem; color:var(--text-muted); margin-top:6px; opacity:0.7;">
-                💡 <strong>Tip:</strong> If Google Photos opens, look for <em>"Gallery"</em> or <em>"Files"</em> in the app chooser. 
-                Or go to <strong>Settings → Apps → Google Photos → Open by default → Clear defaults</strong>.
+                💡 <strong>Tip:</strong> Use <em>"Browse Files"</em> to see all files, then go to <strong>DCIM → Camera</strong>.<br>
+                To fix it permanently: <strong>Settings → Apps → Google Photos → Open by default → Clear defaults</strong>.
             </p>
         </div>
         <div class="upload-actions">
@@ -503,9 +501,10 @@
     let viewerIndex = 0;
     let selectedFiles = [];
 
+    // ----- File inputs -----
     const photoInput = document.getElementById('photoInput');
     const videoInput = document.getElementById('videoInput');
-    const allInput = document.getElementById('allInput');
+    const allFilesInput = document.getElementById('allFilesInput');
     const fileCount = document.getElementById('fileCount');
 
     function updateFileCount() {
@@ -532,16 +531,17 @@
 
     photoInput.addEventListener('change', (e) => handleFiles(photoInput, e));
     videoInput.addEventListener('change', (e) => handleFiles(videoInput, e));
-    allInput.addEventListener('change', (e) => handleFiles(allInput, e));
+    allFilesInput.addEventListener('change', (e) => handleFiles(allFilesInput, e));
 
     function resetFileInputs() {
         selectedFiles = [];
         photoInput.value = '';
         videoInput.value = '';
-        allInput.value = '';
+        allFilesInput.value = '';
         fileCount.textContent = '';
     }
 
+    // ----- Toast -----
     function showToast(message, duration = 3000) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
@@ -552,6 +552,7 @@
         }, duration);
     }
 
+    // ----- Upload -----
     document.getElementById("uploadFab").addEventListener("click", () => {
         document.getElementById("uploadModal").classList.add("active");
     });
@@ -601,6 +602,7 @@
         }
     }
 
+    // ----- Load & Render -----
     async function loadMedia() {
         try {
             let url = API;
@@ -688,6 +690,7 @@
         }).join("");
     }
 
+    // ----- Touch / Mouse for long press -----
     let isLongPress = false;
     let currentPressId = null;
 
@@ -721,6 +724,7 @@
         if (isSelectMode) { toggleSelect(id); } else { openViewer(id); }
     }
 
+    // ----- Selection Mode -----
     function enterSelectMode(id) {
         isSelectMode = true;
         toggleSelect(id);
@@ -754,6 +758,7 @@
         document.querySelectorAll(".media-item").forEach(el => el.classList.remove("selected"));
     }
 
+    // ----- Send to Memory -----
     async function sendToMemory(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
@@ -808,6 +813,7 @@
         }
     }
 
+    // ----- Delete -----
     async function deleteItem(id) {
         if (!confirm("Delete this item?")) return;
         try {
@@ -833,6 +839,7 @@
         isSelectMode = false;
     }
 
+    // ----- Favorite -----
     async function toggleFavorite(id) {
         try {
             await fetch(`${API}/${id}/favorite`, { method: "PUT" });
@@ -840,6 +847,7 @@
         } catch (e) { alert("Failed to update favorite."); }
     }
 
+    // ----- Share -----
     function shareItem(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
@@ -871,6 +879,7 @@
         }
     }
 
+    // ----- Viewer -----
     function openViewer(id) {
         const idx = allMedia.findIndex(m => m.id === id);
         if (idx === -1) return;
@@ -901,6 +910,7 @@
         showViewer();
     }
 
+    // ----- Filter -----
     document.querySelectorAll("#filterTabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll("#filterTabs .tab-btn").forEach(b => b.classList.remove("active"));
@@ -911,6 +921,7 @@
         });
     });
 
+    // ----- Keyboard shortcuts -----
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             if (document.getElementById("viewerOverlay").classList.contains("active")) {
@@ -929,12 +940,14 @@
         }
     });
 
+    // ----- Helpers -----
     function escapeHTML(str) {
         const div = document.createElement("div");
         div.textContent = str || "";
         return div.innerHTML;
     }
 
+    // ----- Init -----
     loadMedia();
 </script>
 </body>
