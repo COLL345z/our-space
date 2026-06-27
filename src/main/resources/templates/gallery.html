@@ -81,7 +81,6 @@
 
         .container { max-width:1100px; margin:0 auto; padding:12px 8px 40px; }
 
-        /* Filter tabs */
         .tabs {
             display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;
             padding:0 4px;
@@ -99,7 +98,6 @@
             color:var(--accent); font-weight:600;
         }
 
-        /* Upload button - floating style */
         .upload-fab {
             position:fixed; bottom:24px; right:16px; z-index:30;
             background: var(--accent-gradient); border:none; color:#1a1000;
@@ -111,7 +109,6 @@
         }
         .upload-fab:hover { transform:scale(1.05); }
 
-        /* Upload modal */
         .upload-modal {
             position:fixed; inset:0; z-index:100;
             background:rgba(0,0,0,0.7);
@@ -187,7 +184,6 @@
             opacity:0.5; cursor:not-allowed;
         }
 
-        /* Grid - phone gallery style */
         .media-grid {
             display:grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -203,9 +199,7 @@
             border-radius:4px;
             transition:transform 0.15s ease;
         }
-        .media-item:active {
-            transform:scale(0.95);
-        }
+        .media-item:active { transform:scale(0.95); }
         .media-item img, .media-item video {
             width:100%; height:100%; object-fit:cover;
             display:block;
@@ -240,18 +234,10 @@
             background:rgba(255,255,255,0.25);
             transform:scale(1.1);
         }
-        .media-item .overlay .delete-btn {
-            color:#ff5e5e;
-        }
-        .media-item .overlay .share-btn {
-            color:#5db8d4;
-        }
-        .media-item .overlay .memory-btn {
-            color:var(--accent);
-        }
-        .media-item .overlay .fav-btn.active {
-            color:var(--accent);
-        }
+        .media-item .overlay .delete-btn { color:#ff5e5e; }
+        .media-item .overlay .share-btn { color:#5db8d4; }
+        .media-item .overlay .memory-btn { color:var(--accent); }
+        .media-item .overlay .fav-btn.active { color:var(--accent); }
         .media-item .badge {
             position:absolute; top:6px; left:6px;
             background:rgba(0,0,0,0.6);
@@ -268,11 +254,7 @@
             pointer-events:none;
             display:none;
         }
-        .media-item .favorite-indicator.show {
-            display:block;
-        }
-
-        /* Selection mode */
+        .media-item .favorite-indicator.show { display:block; }
         .media-item.selected {
             outline:3px solid var(--accent);
             outline-offset:-3px;
@@ -289,7 +271,6 @@
             z-index:5;
         }
 
-        /* Selection toolbar */
         .selection-toolbar {
             position:fixed; bottom:0; left:0; right:0;
             background:var(--bg-secondary);
@@ -301,16 +282,9 @@
             z-index:40;
             backdrop-filter:blur(12px);
         }
-        .selection-toolbar.active {
-            display:flex;
-        }
-        .selection-toolbar .count {
-            font-size:0.85rem; font-weight:600;
-        }
-        .selection-toolbar .actions {
-            display:flex; gap:8px;
-            flex-wrap:wrap;
-        }
+        .selection-toolbar.active { display:flex; }
+        .selection-toolbar .count { font-size:0.85rem; font-weight:600; }
+        .selection-toolbar .actions { display:flex; gap:8px; flex-wrap:wrap; }
         .selection-toolbar .actions button {
             background:none; border:none; color:var(--text-secondary);
             font-size:0.75rem; cursor:pointer; padding:6px 10px;
@@ -319,20 +293,11 @@
             font-family:var(--font);
             white-space:nowrap;
         }
-        .selection-toolbar .actions button:hover {
-            background:var(--bg-hover);
-        }
-        .selection-toolbar .actions .delete-selected {
-            color:#ff5e5e;
-        }
-        .selection-toolbar .actions .share-selected {
-            color:#5db8d4;
-        }
-        .selection-toolbar .actions .memory-selected {
-            color:var(--accent);
-        }
+        .selection-toolbar .actions button:hover { background:var(--bg-hover); }
+        .selection-toolbar .actions .delete-selected { color:#ff5e5e; }
+        .selection-toolbar .actions .share-selected { color:#5db8d4; }
+        .selection-toolbar .actions .memory-selected { color:var(--accent); }
 
-        /* Fullscreen viewer */
         .viewer-overlay {
             position:fixed; inset:0; z-index:50;
             background:rgba(0,0,0,0.95);
@@ -369,7 +334,6 @@
         .viewer-nav.prev { left:10px; }
         .viewer-nav.next { right:10px; }
 
-        /* Long press hint */
         .long-press-hint {
             position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
             background:rgba(0,0,0,0.8);
@@ -390,11 +354,8 @@
         .empty-state {
             grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);
         }
-        .empty-state .icon {
-            font-size:3rem; margin-bottom:12px; opacity:0.5;
-        }
+        .empty-state .icon { font-size:3rem; margin-bottom:12px; opacity:0.5; }
 
-        /* Toast notification */
         .toast {
             position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
             background:rgba(0,0,0,0.85);
@@ -417,16 +378,10 @@
         }
 
         @media (min-width: 600px) {
-            .media-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap:6px;
-            }
+            .media-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:6px; }
         }
         @media (min-width: 900px) {
-            .media-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap:8px;
-            }
+            .media-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:8px; }
         }
     </style>
 </head>
@@ -441,18 +396,15 @@
 </div>
 
 <div class="container">
-    <!-- Filter tabs -->
     <div class="tabs" id="filterTabs">
         <button class="tab-btn active" data-filter="all">All</button>
         <button class="tab-btn" data-filter="IMAGE">📷 Photos</button>
         <button class="tab-btn" data-filter="VIDEO">🎬 Videos</button>
         <button class="tab-btn" data-filter="favorites">❤️ Favorites</button>
     </div>
-
     <div class="media-grid" id="mediaGrid"></div>
 </div>
 
-<!-- Floating upload button -->
 <button class="upload-fab" id="uploadFab"><i class="fa-solid fa-plus"></i></button>
 
 <!-- Upload modal -->
@@ -471,29 +423,40 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Choose files</label>
-            <!-- FIXED: Multiple file pickers for native gallery access -->
+            <label>Choose from Gallery</label>
             <div style="display:flex; flex-direction:column; gap:8px;">
-                <!-- For Photos - uses image/* to open gallery -->
-                <label class="file-picker" id="photoPicker" style="border-color: rgba(93,184,212,0.3);">
-                    <i class="fa-solid fa-image" style="color: var(--rehema, #5db8d4);"></i>
-                    <span>Choose Photos</span>
-                    <input type="file" id="photoInput" accept="image/*" multiple>
+                <!-- 
+                  ⭐ FIX: Using explicit extensions (.jpg,.jpeg,.png,.webp,.gif) 
+                  instead of just "image/*" makes Android show the native file-picker 
+                  instead of jumping directly to Google Photos.
+                -->
+                <label class="file-picker" id="photoPicker" style="border-color: rgba(93,184,212,0.4);">
+                    <i class="fa-solid fa-image" style="color:#5db8d4;"></i>
+                    <span>📷 Select Photos</span>
+                    <input type="file" id="photoInput" 
+                           accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" 
+                           multiple>
                 </label>
-                <!-- For Videos - uses video/* to open gallery -->
-                <label class="file-picker" id="videoPicker" style="border-color: rgba(224,168,59,0.3);">
-                    <i class="fa-solid fa-video" style="color: var(--accent, #e0a83b);"></i>
-                    <span>Choose Videos</span>
-                    <input type="file" id="videoInput" accept="video/*" multiple>
+                <label class="file-picker" id="videoPicker" style="border-color: rgba(224,168,59,0.4);">
+                    <i class="fa-solid fa-video" style="color:#e0a83b;"></i>
+                    <span>🎬 Select Videos</span>
+                    <input type="file" id="videoInput" 
+                           accept=".mp4,.mov,.webm,.mkv,.3gp,video/mp4,video/quicktime,video/webm,video/x-matroska,video/3gpp" 
+                           multiple>
                 </label>
-                <!-- Combined - uses */* but prioritized for gallery -->
-                <label class="file-picker" id="allPicker" style="border-color: rgba(60,184,120,0.3);">
-                    <i class="fa-solid fa-folder-open" style="color: var(--collins, #3cb878);"></i>
-                    <span>Choose All (Photos & Videos)</span>
-                    <input type="file" id="allInput" accept="image/*,video/*" multiple>
+                <label class="file-picker" id="allPicker" style="border-color: rgba(60,184,120,0.4);">
+                    <i class="fa-solid fa-folder-open" style="color:#3cb878;"></i>
+                    <span>📁 Select All Media</span>
+                    <input type="file" id="allInput" 
+                           accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm,.mkv,.3gp,image/*,video/*" 
+                           multiple>
                 </label>
             </div>
             <div id="fileCount" style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;"></div>
+            <p style="font-size:0.6rem; color:var(--text-muted); margin-top:6px; opacity:0.7;">
+                💡 <strong>Tip:</strong> If Google Photos opens, look for <em>"Gallery"</em> or <em>"Files"</em> in the app chooser. 
+                Or go to <strong>Settings → Apps → Google Photos → Open by default → Clear defaults</strong>.
+            </p>
         </div>
         <div class="upload-actions">
             <button class="btn-cancel-upload" onclick="closeUpload()">Cancel</button>
@@ -524,10 +487,7 @@
     </div>
 </div>
 
-<!-- Toast notification -->
 <div class="toast" id="toast"></div>
-
-<!-- Long press hint -->
 <div class="long-press-hint" id="longPressHint">Hold to select multiple</div>
 
 <script>
@@ -543,7 +503,6 @@
     let viewerIndex = 0;
     let selectedFiles = [];
 
-    // ----- File input handling - combine all file inputs -----
     const photoInput = document.getElementById('photoInput');
     const videoInput = document.getElementById('videoInput');
     const allInput = document.getElementById('allInput');
@@ -560,18 +519,14 @@
         }
     }
 
-    // Handle each file input
     function handleFiles(input, event) {
         const files = Array.from(event.target.files || []);
-        // Add new files to the collection
         files.forEach(file => {
-            // Check if already selected
             if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
                 selectedFiles.push(file);
             }
         });
         updateFileCount();
-        // Clear the input so the same file can be selected again
         input.value = '';
     }
 
@@ -579,7 +534,6 @@
     videoInput.addEventListener('change', (e) => handleFiles(videoInput, e));
     allInput.addEventListener('change', (e) => handleFiles(allInput, e));
 
-    // Reset files when closing
     function resetFileInputs() {
         selectedFiles = [];
         photoInput.value = '';
@@ -588,7 +542,6 @@
         fileCount.textContent = '';
     }
 
-    // ----- Toast -----
     function showToast(message, duration = 3000) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
@@ -599,7 +552,6 @@
         }, duration);
     }
 
-    // ----- Upload -----
     document.getElementById("uploadFab").addEventListener("click", () => {
         document.getElementById("uploadModal").classList.add("active");
     });
@@ -649,7 +601,6 @@
         }
     }
 
-    // ----- Load & Render -----
     async function loadMedia() {
         try {
             let url = API;
@@ -737,7 +688,6 @@
         }).join("");
     }
 
-    // ----- Touch / Mouse for long press -----
     let isLongPress = false;
     let currentPressId = null;
 
@@ -751,9 +701,7 @@
         }, 500);
     }
 
-    function handleTouchEnd(e) {
-        clearTimeout(longPressTimer);
-    }
+    function handleTouchEnd(e) { clearTimeout(longPressTimer); }
 
     function handleMouseDown(e, id) {
         isLongPress = false;
@@ -765,44 +713,24 @@
         }, 500);
     }
 
-    function handleMouseUp(e) {
-        clearTimeout(longPressTimer);
-    }
-
-    function handleMouseLeave() {
-        clearTimeout(longPressTimer);
-        isLongPress = false;
-    }
+    function handleMouseUp(e) { clearTimeout(longPressTimer); }
+    function handleMouseLeave() { clearTimeout(longPressTimer); isLongPress = false; }
 
     function handleClick(e, id) {
-        if (isLongPress) {
-            isLongPress = false;
-            return;
-        }
-        if (isSelectMode) {
-            toggleSelect(id);
-        } else {
-            openViewer(id);
-        }
+        if (isLongPress) { isLongPress = false; return; }
+        if (isSelectMode) { toggleSelect(id); } else { openViewer(id); }
     }
 
-    // ----- Selection Mode -----
     function enterSelectMode(id) {
         isSelectMode = true;
         toggleSelect(id);
         document.getElementById("selectionToolbar").classList.add("active");
         document.getElementById("longPressHint").style.display = "block";
-        setTimeout(() => {
-            document.getElementById("longPressHint").style.display = "none";
-        }, 2000);
+        setTimeout(() => { document.getElementById("longPressHint").style.display = "none"; }, 2000);
     }
 
     function toggleSelect(id) {
-        if (selectedIds.has(id)) {
-            selectedIds.delete(id);
-        } else {
-            selectedIds.add(id);
-        }
+        if (selectedIds.has(id)) { selectedIds.delete(id); } else { selectedIds.add(id); }
         updateSelectionUI();
     }
 
@@ -826,29 +754,24 @@
         document.querySelectorAll(".media-item").forEach(el => el.classList.remove("selected"));
     }
 
-    // ----- Send to Memory -----
     async function sendToMemory(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
-        
         try {
             const memoryData = {
                 title: item.title || "From Gallery",
-                description: `📸 Shared from gallery`,
+                description: "📸 Shared from gallery",
                 category: "PHOTO",
                 uploadedBy: "Shared",
                 imageUrls: [item.fileUrl],
                 dateCreated: new Date().toISOString().split('T')[0]
             };
-            
             const res = await fetch(MEMORY_API, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(memoryData)
             });
-            
             if (!res.ok) throw new Error("Failed to save to memory");
-            
             showToast("✅ Added to Memories! ❤️");
         } catch (e) {
             alert("Failed to add to memories. Please try again.");
@@ -857,31 +780,26 @@
 
     async function sendSelectedToMemory() {
         if (selectedIds.size === 0) return;
-        
         const items = allMedia.filter(m => selectedIds.has(m.id));
         let successCount = 0;
-        
         for (let item of items) {
             try {
                 const memoryData = {
                     title: item.title || "From Gallery",
-                    description: `📸 Shared from gallery`,
+                    description: "📸 Shared from gallery",
                     category: "PHOTO",
                     uploadedBy: "Shared",
                     imageUrls: [item.fileUrl],
                     dateCreated: new Date().toISOString().split('T')[0]
                 };
-                
                 const res = await fetch(MEMORY_API, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(memoryData)
                 });
-                
                 if (res.ok) successCount++;
             } catch (e) {}
         }
-        
         if (successCount > 0) {
             showToast(`✅ ${successCount} item${successCount > 1 ? 's' : ''} added to Memories! ❤️`);
             clearSelection();
@@ -890,7 +808,6 @@
         }
     }
 
-    // ----- Delete -----
     async function deleteItem(id) {
         if (!confirm("Delete this item?")) return;
         try {
@@ -900,20 +817,15 @@
             if (selectedIds.size === 0) {
                 document.getElementById("selectionToolbar").classList.remove("active");
             }
-        } catch (e) {
-            alert("Delete failed.");
-        }
+        } catch (e) { alert("Delete failed."); }
     }
 
     async function deleteSelected() {
         if (selectedIds.size === 0) return;
         if (!confirm(`Delete ${selectedIds.size} selected item${selectedIds.size > 1 ? 's' : ''}?`)) return;
-        
         const ids = Array.from(selectedIds);
         for (let id of ids) {
-            try {
-                await fetch(`${API}/${id}`, { method: "DELETE" });
-            } catch (e) {}
+            try { await fetch(`${API}/${id}`, { method: "DELETE" }); } catch (e) {}
         }
         selectedIds.clear();
         await loadMedia();
@@ -921,31 +833,22 @@
         isSelectMode = false;
     }
 
-    // ----- Favorite -----
     async function toggleFavorite(id) {
         try {
             await fetch(`${API}/${id}/favorite`, { method: "PUT" });
             await loadMedia();
-        } catch (e) {
-            alert("Failed to update favorite.");
-        }
+        } catch (e) { alert("Failed to update favorite."); }
     }
 
-    // ----- Share -----
     function shareItem(id) {
         const item = allMedia.find(m => m.id === id);
         if (!item) return;
         if (navigator.share) {
-            navigator.share({
-                title: item.title || "Our Space memory",
-                url: item.fileUrl
-            }).catch(() => {});
+            navigator.share({ title: item.title || "Our Space memory", url: item.fileUrl }).catch(() => {});
         } else {
             navigator.clipboard.writeText(item.fileUrl).then(() => {
                 showToast("📋 Link copied to clipboard!");
-            }).catch(() => {
-                prompt("Copy this URL:", item.fileUrl);
-            });
+            }).catch(() => { prompt("Copy this URL:", item.fileUrl); });
         }
     }
 
@@ -964,13 +867,10 @@
         } else {
             navigator.clipboard.writeText(urls).then(() => {
                 showToast(`📋 ${items.length} links copied to clipboard!`);
-            }).catch(() => {
-                prompt("Copy these URLs:", urls);
-            });
+            }).catch(() => { prompt("Copy these URLs:", urls); });
         }
     }
 
-    // ----- Viewer -----
     function openViewer(id) {
         const idx = allMedia.findIndex(m => m.id === id);
         if (idx === -1) return;
@@ -1001,7 +901,6 @@
         showViewer();
     }
 
-    // ----- Filter -----
     document.querySelectorAll("#filterTabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll("#filterTabs .tab-btn").forEach(b => b.classList.remove("active"));
@@ -1012,7 +911,6 @@
         });
     });
 
-    // ----- Keyboard shortcuts -----
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             if (document.getElementById("viewerOverlay").classList.contains("active")) {
@@ -1024,23 +922,19 @@
             }
         }
         if (e.key === "ArrowLeft" && document.getElementById("viewerOverlay").classList.contains("active")) {
-            e.preventDefault();
-            navigateViewer(-1);
+            e.preventDefault(); navigateViewer(-1);
         }
         if (e.key === "ArrowRight" && document.getElementById("viewerOverlay").classList.contains("active")) {
-            e.preventDefault();
-            navigateViewer(1);
+            e.preventDefault(); navigateViewer(1);
         }
     });
 
-    // ----- Helpers -----
     function escapeHTML(str) {
         const div = document.createElement("div");
         div.textContent = str || "";
         return div.innerHTML;
     }
 
-    // ----- Init -----
     loadMedia();
 </script>
 </body>
