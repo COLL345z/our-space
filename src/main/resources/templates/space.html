@@ -36,6 +36,7 @@
             --radius-xl: 20px;
             --radius-lg: 14px;
             --radius-md: 10px;
+            --radius-sm: 8px;
             --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
             --shadow-md: 0 10px 28px rgba(0,0,0,0.5);
             --shadow-sm: 0 4px 14px rgba(0,0,0,0.4);
@@ -769,10 +770,6 @@
 .cant-continue-hint.hidden {
     display: none;
 }
-@keyframes hintBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-}
 .btn-continue:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -954,8 +951,7 @@ function handleAgreeCheckbox() {
     const checkbox = document.getElementById('agreeCheckbox');
     const btn = document.getElementById('btnContinue');
     const hint = document.getElementById('cantContinueHint');
-    const lockIcon = document.getElementById('btnLockIcon');
-    
+
     if (checkbox.checked) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-heart"></i> Continue to Our Space <i class="fa-solid fa-arrow-right"></i>';
@@ -1037,7 +1033,6 @@ function handleAgreeCheckbox() {
                 if (user === 'Rehema') {
                     welcomeOverlay.classList.remove('hidden');
                     welcomeOverlay.style.display = 'flex';
-                    document.getElementById('welcomeName').textContent = 'Welcome back';
                     document.getElementById('welcomeTitle').textContent = 'My Beautiful Rehema 💙';
                 } else {
                     // Hide immediately for Collins
@@ -1119,6 +1114,9 @@ function handleAgreeCheckbox() {
             }
         }
         function nextCarousel() {
+            // Only auto-advance while the Dashboard tab is actually visible
+            const dashboard = document.getElementById('dashboard');
+            if (!dashboard || !dashboard.classList.contains('active')) return;
             if (carouselImages.length > 0) {
                 carouselIndex = (carouselIndex + 1) % carouselImages.length;
                 renderCarousel();
@@ -1166,7 +1164,7 @@ function handleAgreeCheckbox() {
             if (songsBtn) songsBtn.classList.add('act-mustard');
             const iframe = document.getElementById('songIframe');
             if (iframe && window.currentSongOfDay) {
-                iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, '*');
+                iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, window.location.origin);
             }
             if (window.innerWidth <= 768) {
                 closeSidebar();
@@ -1183,11 +1181,12 @@ function handleAgreeCheckbox() {
         function sendToSongs(msg) {
             const iframe = document.getElementById('songIframe');
             if (iframe) {
-                iframe.contentWindow.postMessage(msg, '*');
+                iframe.contentWindow.postMessage(msg, window.location.origin);
             }
         }
 
         window.addEventListener('message', function(e) {
+            if (e.origin !== window.location.origin) return;
             if (e.data && e.data.action === 'nowPlaying') {
                 const widget = document.getElementById('nowPlayingWidget');
                 widget.style.display = 'flex';
@@ -1201,8 +1200,8 @@ function handleAgreeCheckbox() {
             }
         });
 
-        (function generateMatrix() {
-            const container = document.getElementById('matrixContainer');
+        let matrixContainer = document.getElementById('matrixContainer');
+        function generateMatrix() {
             const cols = Math.floor(window.innerWidth / 40);
             const rows = Math.floor(window.innerHeight / 40);
             const total = cols * rows;
@@ -1212,8 +1211,16 @@ function handleAgreeCheckbox() {
                 const char = chars[Math.floor(Math.random() * chars.length)];
                 html += `<span>${char}</span>`;
             }
-            container.innerHTML = html;
-        })();
+            matrixContainer.innerHTML = html;
+        }
+        generateMatrix();
+
+        // Recalculate the matrix grid on resize/orientation change (debounced)
+        let matrixResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(matrixResizeTimer);
+            matrixResizeTimer = setTimeout(generateMatrix, 200);
+        });
     </script>
 </body>
 </html>
