@@ -339,7 +339,9 @@ async function init() {
         currentUser = (await res.text()).trim();
         if (!currentUser) throw new Error("Empty user");
 
-        userBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${currentUser}`;
+        userBadge.textContent = currentUser;
+        console.log("Current user:", currentUser);
+        
         loadAllData();
 
     } catch (e) {
@@ -509,7 +511,7 @@ function openReply(parentId) {
 }
 
 /* =========================
-   SAVE LETTER
+   SAVE LETTER (FIXED)
 ========================= */
 async function saveLetter(status = "SENT") {
     const title = document.getElementById("letterTitle").value.trim();
@@ -517,7 +519,7 @@ async function saveLetter(status = "SENT") {
     const date = document.getElementById("letterDate").value;
     const openDate = document.getElementById("letterOpenDate").value;
     const files = document.getElementById("letterImages").files;
-    const parentId = parentIdInput.value;
+    const parentId = parentIdInput.value.trim();
 
     // Validation
     if (!title) {
@@ -533,31 +535,55 @@ async function saveLetter(status = "SENT") {
         return;
     }
 
-    // Determine receiver
-    const receiver = currentUser === "Collins" ? "Rehema" : "Collins";
+    // Determine receiver - opposite of current user
+    let receiver;
+    const normalizedUser = currentUser.toLowerCase();
+    if (normalizedUser === "collins" || normalizedUser === "bien") {
+        receiver = "Rehema";
+    } else if (normalizedUser === "rehema") {
+        receiver = "Collins";
+    } else {
+        // Fallback
+        receiver = normalizedUser.includes("rehema") ? "Collins" : "Rehema";
+    }
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
     formData.append("receiver", receiver);
     formData.append("date", date);
-    if (openDate) formData.append("openDate", openDate);
     formData.append("status", status);
-    if (parentId && parentId.trim()) {
+    
+    // Only append optional fields if they have values
+    if (openDate && openDate.trim()) {
+        formData.append("openDate", openDate.trim());
+    }
+    
+    if (parentId && parentId !== "" && parentId !== "null" && parentId !== "undefined") {
         formData.append("parentId", parentId);
     }
 
     // Append images
-    for (let f of files) {
-        formData.append("images", f);
+    if (files && files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+            formData.append("images", files[i]);
+        }
     }
 
     // Disable buttons
     sendBtn.disabled = true;
     saveDraftBtn.style.opacity = "0.5";
-    saveDraftBtn.style.cursor = "not-allowed";
+    saveDraftBtn.style.pointerEvents = "none";
 
     try {
+        console.log("Sending letter:", {
+            title,
+            receiver,
+            status,
+            hasParentId: !!parentId,
+            imageCount: files ? files.length : 0
+        });
+
         const response = await fetch(LETTERS_API, {
             method: "POST",
             body: formData,
@@ -566,8 +592,12 @@ async function saveLetter(status = "SENT") {
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error("Server response:", errorText);
             throw new Error(errorText || "Failed to send letter");
         }
+
+        const result = await response.json();
+        console.log("Letter sent successfully:", result);
 
         // Reset form
         document.getElementById("letterTitle").value = "";
@@ -582,13 +612,14 @@ async function saveLetter(status = "SENT") {
 
         composeOverlay.classList.remove("active");
         await loadAllData();
+        
     } catch (error) {
         console.error("Error sending letter:", error);
         alert("Failed to send letter: " + error.message);
     } finally {
         sendBtn.disabled = false;
         saveDraftBtn.style.opacity = "1";
-        saveDraftBtn.style.cursor = "pointer";
+        saveDraftBtn.style.pointerEvents = "auto";
     }
 }
 
