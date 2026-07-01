@@ -57,6 +57,131 @@
             position: relative;
         }
 
+        /* ⭐ Welcome Overlay */
+        .welcome-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(7, 7, 9, 0.92);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: welcomeFadeIn 0.5s ease;
+        }
+        .welcome-overlay.hidden {
+            display: none;
+        }
+        @keyframes welcomeFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .welcome-card-popup {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-xl);
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .welcome-card-popup::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--rehema), var(--mustard), var(--collins));
+        }
+        .welcome-heart {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            animation: heartBeat 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.2); }
+            60% { transform: scale(1); }
+        }
+        .welcome-card-popup h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .welcome-card-popup .greeting-name {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--rehema), var(--mustard));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .welcome-card-popup .sweet-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        .welcome-card-popup .sweet-message i {
+            color: var(--mustard);
+        }
+        .btn-continue {
+            background: linear-gradient(135deg, var(--rehema), var(--collins));
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 14px 36px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: var(--font);
+            box-shadow: 0 8px 24px rgba(93, 184, 212, 0.3);
+            transition: all var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.02em;
+        }
+        .btn-continue:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 32px rgba(93, 184, 212, 0.45);
+            filter: brightness(1.1);
+        }
+        .btn-continue:active {
+            transform: scale(0.96);
+        }
+        .sparkle-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .sparkle-row span {
+            font-size: 0.8rem;
+            animation: floatUp 1.8s ease-in-out infinite;
+        }
+        .sparkle-row span:nth-child(1) { animation-delay: 0s; }
+        .sparkle-row span:nth-child(2) { animation-delay: 0.3s; }
+        .sparkle-row span:nth-child(3) { animation-delay: 0.6s; }
+        .sparkle-row span:nth-child(4) { animation-delay: 0.9s; }
+        .sparkle-row span:nth-child(5) { animation-delay: 1.2s; }
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0); opacity: 0.6; }
+            50% { transform: translateY(-10px); opacity: 1; }
+        }
+
         .jp-matrix {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -156,7 +281,7 @@
             position:relative;
         }
 
-        /* Sidebar - more transparent, bigger text */
+        /* Sidebar */
         .sidebar {
             position: relative;
             width: 170px;
@@ -247,7 +372,6 @@
         .nav-btn.act-mustard { background:var(--mustard-soft); color:var(--mustard); font-weight:600; box-shadow:inset 3px 0 0 var(--mustard); }
         .nav-btn.act-green { background:var(--collins-soft); color:var(--collins); font-weight:600; box-shadow:inset 3px 0 0 var(--collins); }
 
-        /* Logout at bottom - BIGGER, BRIGHT RED, CLEARLY VISIBLE */
         .sidebar-logout {
            margin: 8px 5px 70px;
             padding: 6px 10px;
@@ -537,7 +661,6 @@
                 transform: translateX(0);
             }
             
-            /* Push main content to the right when sidebar is open */
             .main {
                 margin-left: 0;
                 transition: margin-left 0.3s ease;
@@ -565,9 +688,145 @@
                 display: flex;
             }
         }
+        /* ⭐ Funny checkbox styles */
+.funny-checkbox-wrapper {
+    margin: 18px 0 14px;
+    text-align: left;
+    background: rgba(93, 184, 212, 0.05);
+    border: 1px dashed rgba(93, 184, 212, 0.3);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: all 0.3s ease;
+}
+.funny-checkbox-wrapper:hover {
+    border-color: var(--rehema);
+    background: rgba(93, 184, 212, 0.1);
+}
+.funny-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    user-select: none;
+}
+.funny-checkbox-label input[type="checkbox"] {
+    display: none;
+}
+.checkbox-custom {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border: 2px solid var(--border-card);
+    border-radius: 6px;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    margin-top: 2px;
+}
+.checkbox-custom::after {
+    content: '✓';
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.funny-checkbox-label input:checked + .checkbox-custom {
+    background: var(--collins);
+    border-color: var(--collins);
+    box-shadow: 0 0 12px rgba(60, 184, 120, 0.4);
+}
+.funny-checkbox-label input:checked + .checkbox-custom::after {
+    opacity: 1;
+    transform: scale(1);
+}
+.checkbox-text {
+    flex: 1;
+}
+.tiny-text {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-style: italic;
+    opacity: 0.8;
+}
+.cant-continue-hint {
+    font-size: 0.7rem;
+    color: var(--mustard);
+    margin-top: 8px;
+    text-align: center;
+    animation: hintBounce 1.5s ease-in-out infinite;
+    display: block;
+}
+.cant-continue-hint.hidden {
+    display: none;
+}
+@keyframes hintBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+.btn-continue:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(60%);
+    box-shadow: none;
+    transform: none !important;
+}
+.btn-continue:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: grayscale(60%) !important;
+}
     </style>
 </head>
 <body>
+
+   <!-- ⭐ WELCOME POPUP (Rehema only) -->
+<div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-card-popup">
+        <div class="sparkle-row">
+            <span>✨</span><span>💖</span><span>✨</span><span>💖</span><span>✨</span>
+        </div>
+        <div class="welcome-heart">❤️</div>
+        <div class="greeting-name" id="welcomeName">Welcome back</div>
+        <h2 id="welcomeTitle">My Beautiful Rehema 💙</h2>
+        <p class="sweet-message" id="welcomeMessage">
+            Every day with you feels like a dream I never want to wake up from. 
+            You make my world brighter just by being in it. 
+            I built this space for us — a little corner of the internet 
+            where our memories, songs, and love can live forever. 
+            <br><br>
+            <i class="fa-solid fa-heart"></i> I love you more than words can say. 
+            <br>
+            <i class="fa-solid fa-infinity"></i> Forever yours, Collins
+        </p>
+
+        <!-- ⭐ FUNNY CHECKBOX -->
+        <div class="funny-checkbox-wrapper">
+            <label class="funny-checkbox-label" id="funnyCheckboxLabel">
+                <input type="checkbox" id="agreeCheckbox" onchange="handleAgreeCheckbox()">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">
+                    ✅ I agree that Bien loves me more than I love him 
+                    <span class="tiny-text">(this is legally binding in Our Space court 😤)</span>
+                </span>
+            </label>
+        </div>
+
+        <button class="btn-continue" id="btnContinue" onclick="dismissWelcome()" disabled>
+            <i class="fa-solid fa-lock" id="btnLockIcon"></i> Continue to Our Space
+        </button>
+        <p class="cant-continue-hint" id="cantContinueHint">👆 You gotta tick the box first, beautiful 😘</p>
+    </div>
+</div>
 
     <div class="jp-matrix" id="matrixContainer"></div>
 
@@ -609,7 +868,6 @@
                     <button class="nav-btn" data-section="letters" onclick="show('letters',this,'blue')"><span class="nav-dot" style="background:var(--rehema)"></span>Letters</button>
                     <button class="nav-btn" data-section="specialDays" onclick="show('specialDays',this,'mustard')"><span class="nav-dot" style="background:var(--mustard)"></span>Special Days</button>
                 </nav>
-                <!-- Logout at bottom - BIGGER, BRIGHT RED, CLEARLY VISIBLE -->
                 <a href="/logout" class="sidebar-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
             </div>
 
@@ -694,6 +952,36 @@
     </div>
 
     <script>
+        // ⭐ Handle the funny checkbox
+function handleAgreeCheckbox() {
+    const checkbox = document.getElementById('agreeCheckbox');
+    const btn = document.getElementById('btnContinue');
+    const hint = document.getElementById('cantContinueHint');
+    const lockIcon = document.getElementById('btnLockIcon');
+    
+    if (checkbox.checked) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-heart"></i> Continue to Our Space <i class="fa-solid fa-arrow-right"></i>';
+        hint.classList.add('hidden');
+    } else {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Continue to Our Space';
+        hint.classList.remove('hidden');
+    }
+}
+       function dismissWelcome() {
+    const checkbox = document.getElementById('agreeCheckbox');
+    if (!checkbox.checked) return; // Extra safety — shouldn't happen since button is disabled
+    
+    const overlay = document.getElementById('welcomeOverlay');
+    overlay.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    overlay.style.opacity = '0';
+    overlay.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+    }, 400);
+}
         // Sidebar controls
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
@@ -701,7 +989,6 @@
 
         function toggleSidebar() {
             sidebar.classList.toggle('open');
-            // On mobile, shift main content
             if (window.innerWidth <= 768) {
                 mainContent.classList.toggle('shifted');
             }
@@ -714,19 +1001,21 @@
             }
         }
 
-        // Toggle button
         sidebarToggle.addEventListener('click', toggleSidebar);
 
-        // Close sidebar on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-                closeSidebar();
+            if (e.key === 'Escape') {
+                // First check if welcome overlay is open
+                const welcomeOverlay = document.getElementById('welcomeOverlay');
+                if (welcomeOverlay && !welcomeOverlay.classList.contains('hidden')) {
+                    dismissWelcome();
+                } else if (sidebar.classList.contains('open')) {
+                    closeSidebar();
+                }
             }
         });
 
-        // Modified show function - closes sidebar when dashboard is clicked
         function show(id, btn, color) {
-            // Close sidebar on mobile when any nav item is clicked
             if (window.innerWidth <= 768) {
                 closeSidebar();
             }
@@ -745,6 +1034,19 @@
                 document.getElementById("currentUserName").textContent = user;
                 const badge = document.getElementById("userBadge");
                 badge.style.color = user === 'Rehema' ? 'var(--rehema)' : 'var(--collins)';
+                
+                // ⭐ Show welcome popup ONLY for Rehema
+                const welcomeOverlay = document.getElementById('welcomeOverlay');
+                if (user === 'Rehema') {
+                    welcomeOverlay.classList.remove('hidden');
+                    welcomeOverlay.style.display = 'flex';
+                    document.getElementById('welcomeName').textContent = 'Welcome back';
+                    document.getElementById('welcomeTitle').textContent = 'My Beautiful Rehema 💙';
+                } else {
+                    // Hide immediately for Collins
+                    welcomeOverlay.classList.add('hidden');
+                    welcomeOverlay.style.display = 'none';
+                }
             } catch(e) { window.location.href = "/"; }
         }
         loadCurrentUser();
@@ -869,7 +1171,6 @@
             if (iframe && window.currentSongOfDay) {
                 iframe.contentWindow.postMessage({ action: 'playSong', song: window.currentSongOfDay }, '*');
             }
-            // Close sidebar when navigating
             if (window.innerWidth <= 768) {
                 closeSidebar();
             }
