@@ -521,21 +521,11 @@ async function saveLetter(status = "SENT") {
     const files = document.getElementById("letterImages").files;
     const parentId = parentIdInput.value.trim();
 
-    // Validation
-    if (!title) {
-        alert("Please enter a title");
-        return;
-    }
-    if (!content) {
-        alert("Please write your message");
-        return;
-    }
-    if (!date) {
-        alert("Please select a date");
-        return;
-    }
+    if (!title) { alert("Please enter a title"); return; }
+    if (!content) { alert("Please write your message"); return; }
+    if (!date) { alert("Please select a date"); return; }
 
-    // Determine receiver - opposite of current user
+    // Determine receiver
     let receiver;
     const normalizedUser = currentUser.toLowerCase();
     if (normalizedUser === "collins" || normalizedUser === "bien") {
@@ -543,63 +533,62 @@ async function saveLetter(status = "SENT") {
     } else if (normalizedUser === "rehema") {
         receiver = "Collins";
     } else {
-        // Fallback
         receiver = normalizedUser.includes("rehema") ? "Collins" : "Rehema";
-    }
-
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("receiver", receiver);
-    formData.append("date", date);
-    formData.append("status", status);
-    
-    // Only append optional fields if they have values
-    if (openDate && openDate.trim()) {
-        formData.append("openDate", openDate.trim());
-    }
-    
-    if (parentId && parentId !== "" && parentId !== "null" && parentId !== "undefined") {
-        formData.append("parentId", parentId);
-    }
-
-    // Append images
-    if (files && files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-            formData.append("images", files[i]);
-        }
     }
 
     // Disable buttons
     sendBtn.disabled = true;
     saveDraftBtn.style.opacity = "0.5";
     saveDraftBtn.style.pointerEvents = "none";
+    sendBtn.textContent = "Sending...";
 
     try {
-        console.log("Sending letter:", {
-            title,
-            receiver,
-            status,
-            hasParentId: !!parentId,
-            imageCount: files ? files.length : 0
-        });
-
-        const response = await fetch(LETTERS_API, {
-            method: "POST",
-            body: formData,
-            credentials: "include"
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Server response:", errorText);
-            throw new Error(errorText || "Failed to send letter");
+        // ⭐ Send as JSON if no images, FormData only if images
+        if (!files || files.length === 0) {
+            // NO IMAGES — send as JSON (much smaller, gets through Render)
+            const body = JSON.stringify({
+                title, content, receiver, date,
+                openDate: openDate || null,
+                status,
+                parentId: parentId || null
+            });
+            
+            console.log(`📦 Text-only letter: ${(body.length / 1024).toFixed(1)}KB`);
+            
+            const response = await fetch(LETTERS_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: body,
+                credentials: "include"
+            });
+            
+            if (!response.ok) throw new Error(await response.text());
+            
+        } else {
+            // HAS IMAGES — use FormData (compress images first)
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+            formData.append("receiver", receiver);
+            formData.append("date", date);
+            formData.append("status", status);
+            if (openDate) formData.append("openDate", openDate);
+            if (parentId) formData.append("parentId", parentId);
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append("images", files[i]);
+            }
+            
+            const response = await fetch(LETTERS_API, {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+            
+            if (!response.ok) throw new Error(await response.text());
         }
 
-        const result = await response.json();
-        console.log("Letter sent successfully:", result);
-
-        // Reset form
+        // Reset & reload
         document.getElementById("letterTitle").value = "";
         document.getElementById("letterContent").value = "";
         document.getElementById("letterDate").value = "";
@@ -609,17 +598,17 @@ async function saveLetter(status = "SENT") {
         parentIdInput.value = "";
         editDraftId.value = "";
         document.getElementById("composeTitle").textContent = "💌 New Letter";
-
         composeOverlay.classList.remove("active");
         await loadAllData();
-        
+
     } catch (error) {
-        console.error("Error sending letter:", error);
-        alert("Failed to send letter: " + error.message);
+        console.error("Send error:", error);
+        alert("Failed to send: " + error.message);
     } finally {
         sendBtn.disabled = false;
         saveDraftBtn.style.opacity = "1";
         saveDraftBtn.style.pointerEvents = "auto";
+        sendBtn.textContent = "Send";
     }
 }
 
