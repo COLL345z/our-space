@@ -60,7 +60,7 @@ public class LetterController {
         return letterRepository.findByParentId(id);
     }
 
-    // ⭐ NEW: JSON endpoint (for text-only letters)
+    // ⭐ JSON endpoint (text-only letters)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createLetterJson(
             @RequestBody Map<String, Object> body,
@@ -77,15 +77,16 @@ public class LetterController {
         letter.setSender(sender);
         letter.setReceiver((String) body.get("receiver"));
         letter.setDate((String) body.get("date"));
-        
+
         if (body.get("openDate") != null && !body.get("openDate").toString().isEmpty()) {
             letter.setOpenDate(body.get("openDate").toString());
         }
-        
-        letter.setStatus(body.get("status") != null ? body.get("status").toString().toUpperCase() : "SENT");
-        
-        if (body.get("parentId") != null && !body.get("parentId").toString().isEmpty() 
-            && !body.get("parentId").toString().equals("null")) {
+
+        String status = body.get("status") != null ? body.get("status").toString().toUpperCase() : "SENT";
+        letter.setStatus(status);
+
+        if (body.get("parentId") != null && !body.get("parentId").toString().isEmpty()
+                && !body.get("parentId").toString().equals("null")) {
             letter.setParentId(Long.parseLong(body.get("parentId").toString()));
         }
 
@@ -93,7 +94,7 @@ public class LetterController {
         return ResponseEntity.ok(saved);
     }
 
-    // ⭐ UPDATED: Multipart endpoint (for letters with images)
+    // ⭐ Multipart endpoint (letters with images) — NO defaultValue
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createLetterMultipart(
             @RequestPart("title") String title,
@@ -101,7 +102,7 @@ public class LetterController {
             @RequestPart("receiver") String receiver,
             @RequestPart("date") String date,
             @RequestPart(value = "openDate", required = false) String openDate,
-            @RequestPart(value = "status", defaultValue = "SENT") String status,
+            @RequestPart(value = "status", required = false) String status,
             @RequestPart(value = "parentId", required = false) String parentId,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             HttpSession session) throws Exception {
