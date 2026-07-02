@@ -20,17 +20,13 @@ public class LetterController {
     @Autowired
     private LetterRepository letterRepository;
 
-    // ── GET CURRENT USER ──
     @GetMapping("/api/current-user")
     public ResponseEntity<String> getCurrentUser(HttpSession session) {
         String user = (String) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(401).body("Not logged in");
-        }
+        if (user == null) return ResponseEntity.status(401).body("Not logged in");
         return ResponseEntity.ok(user);
     }
 
-    // ── INBOX ──
     @GetMapping("/inbox")
     public List<Letter> getInbox(HttpSession session) {
         String user = (String) session.getAttribute("user");
@@ -38,7 +34,6 @@ public class LetterController {
         return letterRepository.findByReceiverAndStatus(user, "SENT");
     }
 
-    // ── SENT ──
     @GetMapping("/sent")
     public List<Letter> getSent(HttpSession session) {
         String user = (String) session.getAttribute("user");
@@ -46,7 +41,6 @@ public class LetterController {
         return letterRepository.findBySenderAndStatus(user, "SENT");
     }
 
-    // ── DRAFTS ──
     @GetMapping("/drafts")
     public List<Letter> getDrafts(HttpSession session) {
         String user = (String) session.getAttribute("user");
@@ -54,78 +48,63 @@ public class LetterController {
         return letterRepository.findBySenderAndStatus(user, "DRAFT");
     }
 
-    // ── REPLIES ──
     @GetMapping("/{id}/replies")
     public List<Letter> getReplies(@PathVariable Long id) {
         return letterRepository.findByParentId(id);
     }
 
-    // ⭐ JSON endpoint (text-only letters)
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createLetterJson(
-            @RequestBody Map<String, Object> body,
-            HttpSession session) {
-
-        String sender = (String) session.getAttribute("user");
-        if (sender == null) {
-            return ResponseEntity.status(401).body("Not logged in");
-        }
-
-        Letter letter = new Letter();
-        letter.setTitle((String) body.get("title"));
-        letter.setContent((String) body.get("content"));
-        letter.setSender(sender);
-        letter.setReceiver((String) body.get("receiver"));
-        letter.setDate((String) body.get("date"));
-
-        if (body.get("openDate") != null && !body.get("openDate").toString().isEmpty()) {
-            letter.setOpenDate(body.get("openDate").toString());
-        }
-
-        String status = body.get("status") != null ? body.get("status").toString().toUpperCase() : "SENT";
-        letter.setStatus(status);
-
-        if (body.get("parentId") != null && !body.get("parentId").toString().isEmpty()
-                && !body.get("parentId").toString().equals("null")) {
-            letter.setParentId(Long.parseLong(body.get("parentId").toString()));
-        }
-
-        Letter saved = letterRepository.save(letter);
-        return ResponseEntity.ok(saved);
-    }
-
-    // ⭐ Multipart endpoint (letters with images) — NO defaultValue
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createLetterMultipart(
-            @RequestPart("title") String title,
-            @RequestPart("content") String content,
-            @RequestPart("receiver") String receiver,
-            @RequestPart("date") String date,
-            @RequestPart(value = "openDate", required = false) String openDate,
-            @RequestPart(value = "status", required = false) String status,
-            @RequestPart(value = "parentId", required = false) String parentId,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+    // ⭐ SINGLE endpoint — handles BOTH JSON (text-only) and multipart (with images)
+    @PostMapping
+    public ResponseEntity<?> createLetter(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "receiver", required = false) String receiver,
+            @RequestParam(value = "date", required = false) String date,
+            @RequestParam(value = "openDate", required = false) String openDate,
+            @RequestParam(value = "status", defaultValue = "SENT") String status,
+            @RequestParam(value = "parentId", required = false) Long parentId,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestBody(required = false) Map<String, Object> jsonBody,
             HttpSession session) throws Exception {
 
         String sender = (String) session.getAttribute("user");
-        if (sender == null) {
-            return ResponseEntity.status(401).body("Not logged in");
-        }
+        if (sender == null) return ResponseEntity.status(401).body("Not logged in");
 
         Letter letter = new Letter();
-        letter.setTitle(title);
-        letter.setContent(content);
-        letter.setSender(sender);
-        letter.setReceiver(receiver);
-        letter.setDate(date);
-        letter.setOpenDate(openDate != null ? openDate.trim() : null);
-        letter.setStatus(status != null ? status.toUpperCase() : "SENT");
 
-        if (parentId != null && !parentId.trim().isEmpty() && !parentId.equals("null")) {
-            letter.setParentId(Long.parseLong(parentId.trim()));
+        // Check if this is a JSON request
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            letter.setTitle((String) jsonBody.get("title"));
+            letter.setContent((String) jsonBody.get("content"));
+            letter.setReceiver((String) jsonBody.get("receiver"));
+            letter.setDate((String) jsonBody.get("date"));
+            if (jsonBody.get("openDate") != null) {
+                letter.setOpenDate(jsonBody.get("openDate").toString());
+            }
+            letter.setStatus(jsonBody.get("status") != null ? 
+                jsonBody.get("status").toString().toUpperCase() : "SENT");
+            if (jsonBody.get("parentId") != null) {
+                Object pid = jsonBody.get("parentId");
+                if (pid instanceof Integer) letter.setParentId(((Integer) pid).longValue());
+                else if (pid instanceof Long) letter.setParentId((Long) pid);
+                else if (pid instanceof String && !pid.toString().isEmpty()) {
+                    letter.setParentId(Long.parseLong(pid.toString()));
+                }
+            }
+        } else {
+            // Multipart request
+            letter.setTitle(title);
+            letter.setContent(content);
+            letter.setReceiver(receiver);
+            letter.setDate(date);
+            letter.setOpenDate(openDate);
+            letter.setStatus(status.toUpperCase());
+            letter.setParentId(parentId);
         }
 
-        // Handle images
+        letter.setSender(sender);
+
+        // Handle images (multipart only)
         if (images != null && !images.isEmpty()) {
             List<String> urls = new ArrayList<>();
             String uploadDir = System.getProperty("user.dir") + "/uploads/letters/";
@@ -137,21 +116,16 @@ public class LetterController {
                 String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
                 Path path = uploadPath.resolve(filename);
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
                 String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/uploads/letters/")
-                        .path(filename)
-                        .toUriString();
+                        .path("/uploads/letters/").path(filename).toUriString();
                 urls.add(fileUrl);
             }
             letter.setImagePaths(urls);
         }
 
-        Letter saved = letterRepository.save(letter);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(letterRepository.save(letter));
     }
 
-    // ── UPDATE ──
     @PutMapping("/{id}")
     public Letter updateLetter(@PathVariable Long id, @RequestBody Letter updated) {
         return letterRepository.findById(id).map(letter -> {
@@ -165,13 +139,11 @@ public class LetterController {
         }).orElse(null);
     }
 
-    // ── DELETE ──
     @DeleteMapping("/{id}")
     public void deleteLetter(@PathVariable Long id) {
         letterRepository.deleteById(id);
     }
 
-    // ── MARK READ ──
     @PutMapping("/{id}/read")
     public void markRead(@PathVariable Long id) {
         letterRepository.findById(id).ifPresent(letter -> {
