@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import org.springframework.http.MediaType;
 import java.nio.file.*;
 import java.util.*;
 
@@ -60,61 +60,63 @@ public class LetterController {
         return letterRepository.findByParentId(id);
     }
 
-    // ── CREATE LETTER ──
-    @PostMapping(consumes = "multipart/form-data")
-    public Letter createLetter(
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam String receiver,
-            @RequestParam String date,
-            @RequestParam(required = false) String openDate,
-            @RequestParam(defaultValue = "SENT") String status,
-            @RequestParam(required = false) Long parentId,
-            @RequestParam(required = false) MultipartFile[] images,
-            HttpSession session
-    ) throws Exception {
+   // ── CREATE LETTER (FIXED) ──
+@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<?> createLetter(
+        @RequestPart("title") String title,
+        @RequestPart("content") String content,
+        @RequestPart("receiver") String receiver,
+        @RequestPart("date") String date,
+        @RequestPart(value = "openDate", required = false) String openDate,
+        @RequestPart(value = "status", defaultValue = "SENT") String status,
+        @RequestPart(value = "parentId", required = false) String parentId,
+        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+        HttpSession session
+) throws Exception {
 
-        String sender = (String) session.getAttribute("user");
-        if (sender == null) throw new RuntimeException("Not logged in");
-
-        Letter letter = new Letter();
-        letter.setTitle(title);
-        letter.setContent(content);
-        letter.setSender(sender);
-        letter.setReceiver(receiver);
-        letter.setDate(date);
-        letter.setOpenDate(openDate);
-        letter.setStatus(status.toUpperCase());
-
-        if (parentId != null) {
-            letter.setParentId(parentId);
-        }
-
-        // Handle images
-        if (images != null && images.length > 0) {
-            List<String> urls = new ArrayList<>();
-            String uploadDir = System.getProperty("user.dir") + "/uploads/letters/";
-            Path uploadPath = Paths.get(uploadDir);
-            Files.createDirectories(uploadPath);
-
-            for (MultipartFile file : images) {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = uploadPath.resolve(filename);
-                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-                // Create URL for the image
-                String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/uploads/letters/")
-                        .path(filename)
-                        .toUriString();
-                urls.add(fileUrl);
-            }
-            letter.setImagePaths(urls);
-        }
-
-        return letterRepository.save(letter);
+    String sender = (String) session.getAttribute("user");
+    if (sender == null) {
+        return ResponseEntity.status(401).body("Not logged in");
     }
 
+    Letter letter = new Letter();
+    letter.setTitle(title);
+    letter.setContent(content);
+    letter.setSender(sender);
+    letter.setReceiver(receiver);
+    letter.setDate(date);
+    letter.setOpenDate(openDate != null ? openDate.trim() : null);
+    letter.setStatus(status != null ? status.toUpperCase() : "SENT");
+
+    if (parentId != null && !parentId.trim().isEmpty() && !parentId.equals("null")) {
+        letter.setParentId(Long.parseLong(parentId.trim()));
+    }
+
+    // Handle images
+    if (images != null && !images.isEmpty()) {
+        List<String> urls = new ArrayList<>();
+        String uploadDir = System.getProperty("user.dir") + "/uploads/letters/";
+        Path uploadPath = Paths.get(uploadDir);
+        Files.createDirectories(uploadPath);
+
+        for (MultipartFile file : images) {
+            if (file.isEmpty()) continue;
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path path = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/uploads/letters/")
+                    .path(filename)
+                    .toUriString();
+            urls.add(fileUrl);
+        }
+        letter.setImagePaths(urls);
+    }
+
+    Letter saved = letterRepository.save(letter);
+    return ResponseEntity.ok(saved);
+}
     // ── UPDATE ──
     @PutMapping("/{id}")
     public Letter updateLetter(@PathVariable Long id, @RequestBody Letter updated) {
