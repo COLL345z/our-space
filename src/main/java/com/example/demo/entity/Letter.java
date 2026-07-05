@@ -13,7 +13,8 @@ public class Letter {
     private Long id;
 
     private String title;
-    private String content;
+    @Column(columnDefinition = "TEXT")
+     private String content;
     private String sender;
     private String receiver;
     private String date;
