@@ -4,14 +4,12 @@ import com.example.demo.entity.Activity;
 import com.example.demo.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/activities")
 // @CrossOrigin(origins = "*")
 public class ActivityController {
-
     @Autowired
     private ActivityRepository activityRepository;
 
@@ -50,6 +48,7 @@ public class ActivityController {
             activity.setStatus(updated.getStatus());
             activity.setRatingRehema(updated.getRatingRehema());
             activity.setRatingCollins(updated.getRatingCollins());
+            activity.setCompletedAt(updated.getCompletedAt());
             return activityRepository.save(activity);
         }).orElse(null);
     }
