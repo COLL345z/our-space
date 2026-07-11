@@ -2,9 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Letter;
 import com.example.demo.repository.LetterRepository;
+import com.example.demo.security.CurrentUserResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,40 +21,55 @@ public class LetterController {
     @Autowired
     private LetterRepository letterRepository;
 
+    @Autowired
+    private CurrentUserResolver currentUserResolver;  // ← ADD THIS
+
+    // Helper — use the resolver
+    private String getCurrentUser(HttpServletRequest request, HttpSession session) {
+        return currentUserResolver.resolve(request, session);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Endpoints
+    // ═══════════════════════════════════════════════════════════
+
     @GetMapping("/api/current-user")
-    public ResponseEntity<String> getCurrentUser(HttpSession session) {
-        String user = (String) session.getAttribute("user");
+    public ResponseEntity<String> getCurrentUserEndpoint(HttpServletRequest request,
+                                                         HttpSession session) {
+        String user = getCurrentUser(request, session);
         if (user == null) return ResponseEntity.status(401).body("Not logged in");
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/inbox")
-    public List<Letter> getInbox(HttpSession session) {
-        String user = (String) session.getAttribute("user");
-        if (user == null) return Collections.emptyList();
-        return letterRepository.findByReceiverAndStatus(user, "SENT");
+    public ResponseEntity<List<Letter>> getInbox(HttpServletRequest request,
+                                                  HttpSession session) {
+        String user = getCurrentUser(request, session);
+        if (user == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(letterRepository.findByReceiverAndStatus(user, "SENT"));
     }
 
     @GetMapping("/sent")
-    public List<Letter> getSent(HttpSession session) {
-        String user = (String) session.getAttribute("user");
-        if (user == null) return Collections.emptyList();
-        return letterRepository.findBySenderAndStatus(user, "SENT");
+    public ResponseEntity<List<Letter>> getSent(HttpServletRequest request,
+                                                 HttpSession session) {
+        String user = getCurrentUser(request, session);
+        if (user == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(letterRepository.findBySenderAndStatus(user, "SENT"));
     }
 
     @GetMapping("/drafts")
-    public List<Letter> getDrafts(HttpSession session) {
-        String user = (String) session.getAttribute("user");
-        if (user == null) return Collections.emptyList();
-        return letterRepository.findBySenderAndStatus(user, "DRAFT");
+    public ResponseEntity<List<Letter>> getDrafts(HttpServletRequest request,
+                                                   HttpSession session) {
+        String user = getCurrentUser(request, session);
+        if (user == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(letterRepository.findBySenderAndStatus(user, "DRAFT"));
     }
 
     @GetMapping("/{id}/replies")
-    public List<Letter> getReplies(@PathVariable Long id) {
-        return letterRepository.findByParentId(id);
+    public ResponseEntity<List<Letter>> getReplies(@PathVariable Long id) {
+        return ResponseEntity.ok(letterRepository.findByParentId(id));
     }
 
-    // ⭐ SINGLE endpoint — handles BOTH JSON (text-only) and multipart (with images)
     @PostMapping
     public ResponseEntity<?> createLetter(
             @RequestParam(value = "title", required = false) String title,
@@ -65,14 +81,14 @@ public class LetterController {
             @RequestParam(value = "parentId", required = false) Long parentId,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestBody(required = false) Map<String, Object> jsonBody,
+            HttpServletRequest request,
             HttpSession session) throws Exception {
 
-        String sender = (String) session.getAttribute("user");
+        String sender = getCurrentUser(request, session);
         if (sender == null) return ResponseEntity.status(401).body("Not logged in");
 
         Letter letter = new Letter();
 
-        // Check if this is a JSON request
         if (jsonBody != null && !jsonBody.isEmpty()) {
             letter.setTitle((String) jsonBody.get("title"));
             letter.setContent((String) jsonBody.get("content"));
@@ -81,7 +97,7 @@ public class LetterController {
             if (jsonBody.get("openDate") != null) {
                 letter.setOpenDate(jsonBody.get("openDate").toString());
             }
-            letter.setStatus(jsonBody.get("status") != null ? 
+            letter.setStatus(jsonBody.get("status") != null ?
                 jsonBody.get("status").toString().toUpperCase() : "SENT");
             if (jsonBody.get("parentId") != null) {
                 Object pid = jsonBody.get("parentId");
@@ -92,7 +108,6 @@ public class LetterController {
                 }
             }
         } else {
-            // Multipart request
             letter.setTitle(title);
             letter.setContent(content);
             letter.setReceiver(receiver);
@@ -104,7 +119,6 @@ public class LetterController {
 
         letter.setSender(sender);
 
-        // Handle images (multipart only)
         if (images != null && !images.isEmpty()) {
             List<String> urls = new ArrayList<>();
             String uploadDir = System.getProperty("user.dir") + "/uploads/letters/";
@@ -127,7 +141,8 @@ public class LetterController {
     }
 
     @PutMapping("/{id}")
-    public Letter updateLetter(@PathVariable Long id, @RequestBody Letter updated) {
+    public ResponseEntity<Letter> updateLetter(@PathVariable Long id,
+                                                @RequestBody Letter updated) {
         return letterRepository.findById(id).map(letter -> {
             letter.setTitle(updated.getTitle());
             letter.setContent(updated.getContent());
@@ -135,20 +150,22 @@ public class LetterController {
             letter.setOpenDate(updated.getOpenDate());
             letter.setStatus(updated.getStatus());
             letter.setReceiver(updated.getReceiver());
-            return letterRepository.save(letter);
-        }).orElse(null);
+            return ResponseEntity.ok(letterRepository.save(letter));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public void deleteLetter(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteLetter(@PathVariable Long id) {
         letterRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/read")
-    public void markRead(@PathVariable Long id) {
-        letterRepository.findById(id).ifPresent(letter -> {
+    public ResponseEntity<Void> markRead(@PathVariable Long id) {
+        return letterRepository.findById(id).map(letter -> {
             letter.setRead(true);
             letterRepository.save(letter);
-        });
+            return ResponseEntity.<Void>noContent().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
