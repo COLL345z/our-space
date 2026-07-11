@@ -22,16 +22,11 @@ public class LetterController {
     private LetterRepository letterRepository;
 
     @Autowired
-    private CurrentUserResolver currentUserResolver;  // ← ADD THIS
+    private CurrentUserResolver currentUserResolver;
 
-    // Helper — use the resolver
     private String getCurrentUser(HttpServletRequest request, HttpSession session) {
         return currentUserResolver.resolve(request, session);
     }
-
-    // ═══════════════════════════════════════════════════════════
-    // Endpoints
-    // ═══════════════════════════════════════════════════════════
 
     @GetMapping("/api/current-user")
     public ResponseEntity<String> getCurrentUserEndpoint(HttpServletRequest request,
@@ -156,16 +151,22 @@ public class LetterController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLetter(@PathVariable Long id) {
-        letterRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        if (letterRepository.existsById(id)) {
+            letterRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}/read")
     public ResponseEntity<Void> markRead(@PathVariable Long id) {
-        return letterRepository.findById(id).map(letter -> {
+        Optional<Letter> opt = letterRepository.findById(id);
+        if (opt.isPresent()) {
+            Letter letter = opt.get();
             letter.setRead(true);
             letterRepository.save(letter);
-            return ResponseEntity.<Void>noContent().build();
-        }).orElse(ResponseEntity.notFound().build());
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
