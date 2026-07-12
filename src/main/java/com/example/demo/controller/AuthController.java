@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -59,6 +60,21 @@ public class AuthController {
         return ResponseEntity.ok(body);
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers(HttpServletRequest request, HttpSession session) {
+        String username = currentUserResolver.resolve(request, session);
+        if (username == null) return ResponseEntity.status(401).build();
+
+        List<Map<String, Object>> result = userRepository.findAll().stream()
+            .map(u -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("username", u.getUsername());
+                m.put("profilePhotoUrl", u.getProfilePhotoUrl());
+                return m;
+            }).toList();
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/profile-photo")
     public ResponseEntity<?> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file,
@@ -83,20 +99,6 @@ public class AuthController {
             return ResponseEntity.status(500).body(Map.of("error", "Upload failed"));
         }
     }
-    @GetMapping("/users")
-public ResponseEntity<?> getAllUsers(HttpServletRequest request, HttpSession session) {
-    String username = currentUserResolver.resolve(request, session);
-    if (username == null) return ResponseEntity.status(401).build();
-
-    List<Map<String, Object>> result = userRepository.findAll().stream()
-        .map(u -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("username", u.getUsername());
-            m.put("profilePhotoUrl", u.getProfilePhotoUrl());
-            return m;
-        }).toList();
-    return ResponseEntity.ok(result);
-}
 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(
