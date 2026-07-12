@@ -1,12 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.repository.MovieRepository;
 import com.example.demo.entity.Movie;
+import com.example.demo.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,38 +11,27 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/movies")
-@CrossOrigin(origins = "*")  // Allow requests from your Android app
 public class MovieController {
 
     @Autowired
     private MovieRepository movieRepository;
 
-    // ─── GET ALL MOVIES ──────────────────────────────────────────
+    // ─── GET all movies ─────────────────────────────────────────
     @GetMapping
-    public ResponseEntity<List<Movie>> getAllMovies() {
-        List<Movie> movies = movieRepository.findAllByOrderByCreatedAtDesc();
-        return ResponseEntity.ok(movies);
+    public List<Movie> getAllMovies() {
+        return movieRepository.findAll();
     }
 
-    // ─── GET MOVIE BY ID ────────────────────────────────────────
+    // ─── GET movie by id ────────────────────────────────────────
     @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id));
-        return ResponseEntity.ok(movie);
+    public Movie getMovieById(@PathVariable Long id) {
+        return movieRepository.findById(id).orElse(null);
     }
 
-    // ─── GET MOVIES BY STATUS ───────────────────────────────────
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<Movie>> getMoviesByStatus(@PathVariable String status) {
-        List<Movie> movies = movieRepository.findByStatus(status.toUpperCase());
-        return ResponseEntity.ok(movies);
-    }
-
-    // ─── ADD MOVIE ──────────────────────────────────────────────
+    // ─── CREATE movie ───────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<Movie> addMovie(@RequestBody Movie movie) {
-        // Set default values if not provided
+    public Movie createMovie(@RequestBody Movie movie) {
+        // Set defaults
         if (movie.getStatus() == null || movie.getStatus().isEmpty()) {
             movie.setStatus("WATCHLIST");
         }
@@ -62,130 +48,89 @@ public class MovieController {
             movie.setYear("");
         }
 
-        Movie savedMovie = movieRepository.save(movie);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMovie);
+        // Validate ratings
+        if (movie.getRatingRehema() < 0 || movie.getRatingRehema() > 5) {
+            movie.setRatingRehema(0);
+        }
+        if (movie.getRatingCollins() < 0 || movie.getRatingCollins() > 5) {
+            movie.setRatingCollins(0);
+        }
+
+        return movieRepository.save(movie);
     }
 
-    // ─── UPDATE MOVIE ───────────────────────────────────────────
+    // ─── UPDATE movie ───────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie movieDetails) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id));
-
-        // Update only the fields that are provided
-        if (movieDetails.getTitle() != null) {
-            movie.setTitle(movieDetails.getTitle());
-        }
-        if (movieDetails.getDescription() != null) {
-            movie.setDescription(movieDetails.getDescription());
-        }
-        if (movieDetails.getGenre() != null) {
-            movie.setGenre(movieDetails.getGenre());
-        }
-        if (movieDetails.getYear() != null) {
-            movie.setYear(movieDetails.getYear());
-        }
-        if (movieDetails.getStatus() != null) {
-            movie.setStatus(movieDetails.getStatus());
-        }
-        if (movieDetails.getDateAdded() != null) {
-            movie.setDateAdded(movieDetails.getDateAdded());
-        }
-        if (movieDetails.getDateWatched() != null) {
-            movie.setDateWatched(movieDetails.getDateWatched());
-        }
-        movie.setRatingRehema(movieDetails.getRatingRehema());
-        movie.setRatingCollins(movieDetails.getRatingCollins());
-
-        Movie updatedMovie = movieRepository.save(movie);
-        return ResponseEntity.ok(updatedMovie);
+    public Movie updateMovie(@PathVariable Long id, @RequestBody Movie updated) {
+        return movieRepository.findById(id).map(movie -> {
+            movie.setTitle(updated.getTitle());
+            movie.setDescription(updated.getDescription());
+            movie.setGenre(updated.getGenre());
+            movie.setYear(updated.getYear());
+            movie.setStatus(updated.getStatus());
+            movie.setDateAdded(updated.getDateAdded());
+            movie.setDateWatched(updated.getDateWatched());
+            movie.setRatingRehema(updated.getRatingRehema());
+            movie.setRatingCollins(updated.getRatingCollins());
+            return movieRepository.save(movie);
+        }).orElse(null);
     }
 
-    // ─── UPDATE MOVIE STATUS ────────────────────────────────────
+    // ─── UPDATE movie status ────────────────────────────────────
     @PutMapping("/{id}/status")
-    public ResponseEntity<Movie> updateMovieStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id));
+    public Movie updateMovieStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return movieRepository.findById(id).map(movie -> {
+            String newStatus = body.get("status");
+            if (newStatus != null) {
+                movie.setStatus(newStatus);
 
-        String newStatus = body.get("status");
-        if (newStatus == null || newStatus.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is required");
-        }
-
-        // Validate status
-        if (!newStatus.equals("WATCHLIST") && !newStatus.equals("WATCHING") && !newStatus.equals("WATCHED")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status. Must be WATCHLIST, WATCHING, or WATCHED");
-        }
-
-        movie.setStatus(newStatus);
-
-        // If marking as watched, set the date
-        if (newStatus.equals("WATCHED")) {
-            String dateWatched = body.getOrDefault("dateWatched", LocalDate.now().toString());
-            movie.setDateWatched(dateWatched);
-        }
-
-        Movie updatedMovie = movieRepository.save(movie);
-        return ResponseEntity.ok(updatedMovie);
+                // If marked as watched, set the date
+                if ("WATCHED".equals(newStatus)) {
+                    String dateWatched = body.getOrDefault("dateWatched", LocalDate.now().toString());
+                    movie.setDateWatched(dateWatched);
+                }
+            }
+            return movieRepository.save(movie);
+        }).orElse(null);
     }
 
-    // ─── UPDATE MOVIE RATING ────────────────────────────────────
+    // ─── UPDATE movie rating ────────────────────────────────────
     @PutMapping("/{id}/rating")
-    public ResponseEntity<Movie> updateMovieRating(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id));
-
-        // Update Rehema's rating
-        if (body.containsKey("ratingRehema")) {
-            Object ratingObj = body.get("ratingRehema");
-            int rating = ratingObj instanceof Integer ? (Integer) ratingObj : ((Number) ratingObj).intValue();
-            
-            if (rating < 0 || rating > 5) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rating must be between 0 and 5");
+    public Movie updateMovieRating(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        return movieRepository.findById(id).map(movie -> {
+            // Update Rehema's rating
+            if (body.containsKey("ratingRehema")) {
+                int rating = ((Number) body.get("ratingRehema")).intValue();
+                if (rating >= 0 && rating <= 5) {
+                    movie.setRatingRehema(rating);
+                }
             }
-            movie.setRatingRehema(rating);
-        }
-
-        // Update Collins' rating
-        if (body.containsKey("ratingCollins")) {
-            Object ratingObj = body.get("ratingCollins");
-            int rating = ratingObj instanceof Integer ? (Integer) ratingObj : ((Number) ratingObj).intValue();
-            
-            if (rating < 0 || rating > 5) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rating must be between 0 and 5");
+            // Update Collins' rating
+            if (body.containsKey("ratingCollins")) {
+                int rating = ((Number) body.get("ratingCollins")).intValue();
+                if (rating >= 0 && rating <= 5) {
+                    movie.setRatingCollins(rating);
+                }
             }
-            movie.setRatingCollins(rating);
-        }
-
-        Movie updatedMovie = movieRepository.save(movie);
-        return ResponseEntity.ok(updatedMovie);
+            return movieRepository.save(movie);
+        }).orElse(null);
     }
 
-    // ─── DELETE MOVIE ───────────────────────────────────────────
+    // ─── DELETE movie ───────────────────────────────────────────
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id));
-
-        movieRepository.delete(movie);
-        return ResponseEntity.noContent().build();
+    public void deleteMovie(@PathVariable Long id) {
+        movieRepository.deleteById(id);
     }
 
-    // ─── GET MOVIE STATS ────────────────────────────────────────
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Long>> getMovieStats() {
-        long watchlist = movieRepository.countByStatus("WATCHLIST");
-        long watching = movieRepository.countByStatus("WATCHING");
-        long watched = movieRepository.countByStatus("WATCHED");
-        long total = movieRepository.count();
+    // ─── GET by status ──────────────────────────────────────────
+    @GetMapping("/status/{status}")
+    public List<Movie> getByStatus(@PathVariable String status) {
+        return movieRepository.findByStatus(status);
+    }
 
-        Map<String, Long> stats = Map.of(
-                "total", total,
-                "watchlist", watchlist,
-                "watching", watching,
-                "watched", watched
-        );
-
-        return ResponseEntity.ok(stats);
+    // ─── GET by genre ───────────────────────────────────────────
+    @GetMapping("/genre/{genre}")
+    public List<Movie> getByGenre(@PathVariable String genre) {
+        return movieRepository.findByGenre(genre);
     }
 }
