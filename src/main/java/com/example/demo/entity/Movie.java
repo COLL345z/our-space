@@ -1,4 +1,4 @@
-package com.example.ourspace.model
+package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
