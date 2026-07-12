@@ -14,6 +14,10 @@ public class User {
     @Column(nullable = false)
     private String passwordHash;
 
+    
+    private String profilePhotoUrl;
+ public String getProfilePhotoUrl() { return profilePhotoUrl; }
+     public void setProfilePhotoUrl(String profilePhotoUrl) { this.profilePhotoUrl = profilePhotoUrl; }
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
