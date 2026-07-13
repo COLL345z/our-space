@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.demo.entity.Memory;
 import com.example.demo.repository.MemoryRepository;
+import com.example.demo.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/memories")
-
 public class MemoryController {
 
     @Autowired
@@ -26,6 +26,9 @@ public class MemoryController {
 
     @Autowired
     private Cloudinary cloudinary;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping
     public List<Memory> getAll() {
@@ -37,7 +40,16 @@ public class MemoryController {
         if (memory.getDateCreated() == null) {
             memory.setDateCreated(LocalDate.now());
         }
-        return repository.save(memory);
+        Memory saved = repository.save(memory);
+        
+        // Send notification to partner
+        notificationService.notifyPartner(
+            memory.getUploadedBy(),
+            "New memory added 💛",
+            memory.getTitle() != null ? memory.getTitle() : "Check it out in Our Space"
+        );
+        
+        return saved;
     }
 
     // ✅ SUPPORT MULTIPLE FILE UPLOADS TO CLOUDINARY
