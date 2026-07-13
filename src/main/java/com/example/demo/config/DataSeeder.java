@@ -19,10 +19,10 @@ public class DataSeeder {
                 rehema.setPasswordHash(encoder.encode("rehema123")); // change via app after first login
                 repo.save(rehema);
 
-                User collins = new User();
-                collins.setUsername("Collins");
-                collins.setPasswordHash(encoder.encode("collins123"));
-                repo.save(collins);
+                User bien = new User();
+             bien.setUsername("Bien");
+                bien.setPasswordHash(encoder.encode("collins123"));
+                repo.save(bien);
             }
         };
     }
