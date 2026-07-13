@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.Letter;
 import com.example.demo.repository.LetterRepository;
 import com.example.demo.security.CurrentUserResolver;
+import com.example.demo.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class LetterController {
 
     @Autowired
     private CurrentUserResolver currentUserResolver;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private String getCurrentUser(HttpServletRequest request, HttpSession session) {
         return currentUserResolver.resolve(request, session);
@@ -132,7 +136,22 @@ public class LetterController {
             letter.setImagePaths(urls);
         }
 
-        return ResponseEntity.ok(letterRepository.save(letter));
+        Letter saved = letterRepository.save(letter);
+
+        // ✅ Send notification for new letters (only if status is SENT, not DRAFT)
+        if (saved.getStatus().equals("SENT") && saved.getReceiver() != null) {
+            String notificationTitle = "💌 New letter from " + sender;
+            String notificationBody = saved.getTitle() != null ? 
+                saved.getTitle() : "You received a new love letter";
+            
+            notificationService.notifyPartner(
+                saved.getReceiver(),  // Send notification to the receiver
+                notificationTitle,
+                notificationBody
+            );
+        }
+
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/{id}")
