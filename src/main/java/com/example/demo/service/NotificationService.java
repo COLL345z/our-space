@@ -7,6 +7,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;  // ← Add this import
+
 
 @Service
 public class NotificationService {
