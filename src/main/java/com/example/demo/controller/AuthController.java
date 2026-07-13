@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.User;
+import com.example.demo.entity.DeviceToken;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.DeviceTokenRepository;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.security.CurrentUserResolver;
 import com.cloudinary.Cloudinary;
@@ -20,14 +22,19 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final UserRepository userRepository;
+    private final DeviceTokenRepository deviceTokenRepository;
     private final JwtUtil jwtUtil;
     private final CurrentUserResolver currentUserResolver;
     private final Cloudinary cloudinary;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public AuthController(UserRepository userRepository, JwtUtil jwtUtil, 
-                           CurrentUserResolver currentUserResolver, Cloudinary cloudinary) {
+    public AuthController(UserRepository userRepository, 
+                           DeviceTokenRepository deviceTokenRepository,
+                           JwtUtil jwtUtil, 
+                           CurrentUserResolver currentUserResolver, 
+                           Cloudinary cloudinary) {
         this.userRepository = userRepository;
+        this.deviceTokenRepository = deviceTokenRepository;
         this.jwtUtil = jwtUtil;
         this.currentUserResolver = currentUserResolver;
         this.cloudinary = cloudinary;
@@ -119,6 +126,32 @@ public class AuthController {
         }
         user.setPasswordHash(encoder.encode(newPassword));
         userRepository.save(user);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/register-device")
+    public ResponseEntity<?> registerDevice(
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request, HttpSession session) {
+        String username = currentUserResolver.resolve(request, session);
+        if (username == null) return ResponseEntity.status(401).build();
+
+        String token = body.get("token");
+        if (token == null || token.isBlank()) return ResponseEntity.badRequest().build();
+
+        // Avoid duplicate rows for the same token
+        deviceTokenRepository.findByToken(token).ifPresentOrElse(
+            existing -> { 
+                existing.setUsername(username); 
+                deviceTokenRepository.save(existing); 
+            },
+            () -> {
+                DeviceToken dt = new DeviceToken();
+                dt.setUsername(username);
+                dt.setToken(token);
+                deviceTokenRepository.save(dt);
+            }
+        );
         return ResponseEntity.ok(Map.of("success", true));
     }
 }
