@@ -18,7 +18,7 @@ public class SpecialDay {
     private LocalDate eventDate;
 
     private String type;
-
+   private String createdBy;
   @Column(name = "created_by")
     private String createdBy;
     
