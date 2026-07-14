@@ -17,22 +17,6 @@ public class SpecialDay {
     
     private String type; // "birthday", "anniversary", "milestone", "first", "other"
     
-    @Column(name = "created_by")
-    private String createdBy;  // ← Make sure this is only defined ONCE
-    
-    @Column(name = "is_recurring")
-    private boolean isRecurring = false;
-    
-    // ✅ Add this if it doesn't exist (for the scheduler)
-    @Column(name = "is_recurring")
-    public boolean isRecurring() {
-        return isRecurring;
-    }
-    
-    public void setRecurring(boolean recurring) {
-        isRecurring = recurring;
-    }
-    
     // Getters and setters
     public Long getId() {
         return id;
@@ -64,13 +48,5 @@ public class SpecialDay {
     
     public void setType(String type) {
         this.type = type;
-    }
-    
-    public String getCreatedBy() {
-        return createdBy;
-    }
-    
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
     }
 }
