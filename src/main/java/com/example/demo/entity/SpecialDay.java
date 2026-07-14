@@ -19,8 +19,11 @@ public class SpecialDay {
 
     private String type;
 
+  @Column(name = "created_by")
     private String createdBy;
-
+    
+    @Column(name = "is_recurring")
+    private boolean isRecurring = false;
     public SpecialDay() {
     }
 
