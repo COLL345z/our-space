@@ -20,23 +20,17 @@ public class SpecialDayScheduler {
     @Autowired
     private NotificationService notificationService;
 
-    // Run every day at 9:00 AM
     @Scheduled(cron = "0 0 9 * * *")
     public void checkUpcomingSpecialDays() {
         LocalDate today = LocalDate.now();
         
-        // Get all special days
         List<SpecialDay> allDays = specialDayRepository.findAll();
         
         for (SpecialDay day : allDays) {
             LocalDate eventDate = day.getEventDate();
             long daysUntil = ChronoUnit.DAYS.between(today, eventDate);
             
-            // Send reminder for:
-            // - 7 days before
-            // - 3 days before  
-            // - 1 day before
-            // - Day of (0 days)
+            // Send reminder for 7, 3, 1 day before and day of
             if (daysUntil == 7 || daysUntil == 3 || daysUntil == 1 || daysUntil == 0) {
                 String reminderMessage = getReminderMessage(daysUntil, day.getDescription());
                 
@@ -47,9 +41,8 @@ public class SpecialDayScheduler {
                 );
             }
             
-            // If it's recurring, also check for next occurrence
+            // ✅ Check recurring events using the getter method
             if (day.isRecurring() && daysUntil < 0) {
-                // For recurring events, calculate next occurrence
                 LocalDate nextOccurrence = getNextOccurrence(day.getEventDate(), today);
                 if (nextOccurrence != null) {
                     long newDaysUntil = ChronoUnit.DAYS.between(today, nextOccurrence);
@@ -78,7 +71,6 @@ public class SpecialDayScheduler {
     }
 
     private LocalDate getNextOccurrence(LocalDate eventDate, LocalDate today) {
-        // For recurring events (birthdays, anniversaries), find next occurrence
         LocalDate next = eventDate.withYear(today.getYear());
         
         if (next.isBefore(today) || next.equals(today)) {
