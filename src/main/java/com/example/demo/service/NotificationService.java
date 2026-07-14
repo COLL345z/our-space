@@ -38,6 +38,12 @@ public class NotificationService {
     /** Sends to everyone EXCEPT the given username — for "your partner did X" notifications. */
     public void notifyPartner(String actingUsername, String title, String body) {
         List<String> allUsers = List.of("Rehema", "Collins"); // adjust if you ever add more users
+        List<DeviceToken> tokens = deviceTokenRepository.findByUsername(recipientUsername);
+        
+        for (DeviceToken token : tokens) {
+            pushNotificationService.sendPushNotification(token.getToken(), title, body);
+        }
+    }
         for (String user : allUsers) {
             if (!user.equalsIgnoreCase(actingUsername)) {
                 sendToUser(user, title, body);
