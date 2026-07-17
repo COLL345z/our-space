@@ -41,8 +41,10 @@ public class MessageController {
         List<Message> history = messageRepository.findAllByOrderByIdAsc();
         return ResponseEntity.ok(history);
     }
-     @PostMapping("/send")
-public ResponseEntity<?> sendMessage(@RequestBody Message message, HttpServletRequest request, HttpSession session) {
+    @PostMapping("/send")
+public ResponseEntity<?> sendMessage(@RequestBody Message message, 
+                                     HttpServletRequest request, 
+                                     HttpSession session) {
     String username = currentUserResolver.resolve(request, session);
     if (username == null) return ResponseEntity.status(401).build();
     
@@ -53,7 +55,7 @@ public ResponseEntity<?> sendMessage(@RequestBody Message message, HttpServletRe
     
     Message saved = messageRepository.save(message);
     
-    // Also broadcast via WebSocket
+    // Also broadcast via WebSocket so other clients get it live
     messagingTemplate.convertAndSend("/topic/messages", saved);
     
     return ResponseEntity.ok(saved);
