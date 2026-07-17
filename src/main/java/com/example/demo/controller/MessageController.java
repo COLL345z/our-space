@@ -41,7 +41,23 @@ public class MessageController {
         List<Message> history = messageRepository.findAllByOrderByIdAsc();
         return ResponseEntity.ok(history);
     }
-
+     @PostMapping("/send")
+public ResponseEntity<?> sendMessage(@RequestBody Message message, HttpServletRequest request, HttpSession session) {
+    String username = currentUserResolver.resolve(request, session);
+    if (username == null) return ResponseEntity.status(401).build();
+    
+    message.setSenderUsername(username);
+    if (message.getTimestamp() == null) {
+        message.setTimestamp(Instant.now().toString());
+    }
+    
+    Message saved = messageRepository.save(message);
+    
+    // Also broadcast via WebSocket
+    messagingTemplate.convertAndSend("/topic/messages", saved);
+    
+    return ResponseEntity.ok(saved);
+}
     // ─── WebSocket Endpoint ─────────────────────────────────────────
     @MessageMapping("/chat.send")
     @SendTo("/topic/messages")
@@ -56,4 +72,6 @@ public class MessageController {
         
         return messageRepository.save(message);
     }
+
+    
 }
