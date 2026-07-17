@@ -25,13 +25,13 @@ public class ChatController {
     // Client sends to /app/chat.send. Sender identity comes from the
     // handshake-authenticated Principal (see WebSocketConfig), NEVER from
     // the payload itself — a client can't spoof who a message is "from".
-    @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatMessageDto dto, Principal principal) {
-        if (principal == null || dto.getContent() == null || dto.getContent().isBlank()) return;
+    // @MessageMapping("/chat.send")
+    // public void sendMessage(@Payload ChatMessageDto dto, Principal principal) {
+    //     if (principal == null || dto.getContent() == null || dto.getContent().isBlank()) return;
 
-        Message message = new Message(principal.getName(), dto.getContent(), Instant.now().toString());
-        Message saved = messageRepository.save(message);
+    //     Message message = new Message(principal.getName(), dto.getContent(), Instant.now().toString());
+    //     Message saved = messageRepository.save(message);
 
-        messagingTemplate.convertAndSend("/topic/messages", saved);
-    }
+    //     messagingTemplate.convertAndSend("/topic/messages", saved);
+    // }
 }
