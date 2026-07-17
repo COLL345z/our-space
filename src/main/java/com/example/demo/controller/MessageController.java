@@ -10,9 +10,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -42,19 +42,18 @@ public class MessageController {
         return ResponseEntity.ok(history);
     }
 
-    // ─── 🔥 WebSocket Endpoint ──────────────────────────────────────
-    // Handles incoming messages from the client
+    // ─── WebSocket Endpoint ─────────────────────────────────────────
     @MessageMapping("/chat.send")
     @SendTo("/topic/messages")
-    public Message sendMessage(@Payload Message message) {
-        // Set timestamp if not set
+    public Message sendMessage(@Payload Message message, Principal principal) {
+        // Use the authenticated username from the STOMP session
+        String username = principal != null ? principal.getName() : message.getSenderUsername();
+        message.setSenderUsername(username);
+        
         if (message.getTimestamp() == null) {
             message.setTimestamp(Instant.now().toString());
         }
         
-        // 🔥 Save to database
-        Message saved = messageRepository.save(message);
-        
-        return saved;
+        return messageRepository.save(message);
     }
 }
