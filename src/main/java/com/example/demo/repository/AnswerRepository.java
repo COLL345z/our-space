@@ -6,17 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AnswerRepository extends JpaRepository<Answer, Long> {
+   public interface AnswerRepository extends JpaRepository<Answer, Long> {
     List<Answer> findByRoundId(Long roundId);
-    
-    // Additional useful methods
-    List<Answer> findByRoundIdOrderByCreatedAtAsc(Long roundId);
-    
-    List<Answer> findByRoundIdAndQuestionId(Long roundId, Long questionId);
-    
-    List<Answer> findByPlayerId(Long playerId);
-    
-    List<Answer> findByRoundIdAndIsCorrect(Long roundId, boolean isCorrect);
-    
-    long countByRoundIdAndIsCorrect(Long roundId, boolean isCorrect);
 }
+
