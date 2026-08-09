@@ -8,10 +8,4 @@ import java.util.List;
 @Repository
 public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long> {
     List<QuestionBank> findByMode(String mode);
-    
-    // Additional useful methods
-    List<QuestionBank> findByModeOrderByIdAsc(String mode);
-    List<QuestionBank> findByCategory(String category);
-    List<QuestionBank> findByModeAndCategory(String mode, String category);
-    long countByMode(String mode);
 }
