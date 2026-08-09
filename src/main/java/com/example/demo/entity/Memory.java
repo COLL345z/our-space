@@ -24,19 +24,30 @@ public class Memory {
 
     private LocalDate dateCreated;
 
+    // ✅ New fields
+    @Column(length = 2048)  // longer URL possible
+    private String linkUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String textContent;
+
     // Constructors
     public Memory() {}
 
-    public Memory(String title, String category, String description, String uploadedBy, List<String> imageUrls) {
+    public Memory(String title, String category, String description, String uploadedBy, 
+                  List<String> imageUrls, String linkUrl, String textContent) {
         this.title = title;
         this.category = category;
         this.description = description;
         this.uploadedBy = uploadedBy;
         this.imageUrls = imageUrls != null ? imageUrls : new ArrayList<>();
+        this.linkUrl = linkUrl;
+        this.textContent = textContent;
         this.dateCreated = LocalDate.now();
     }
 
-    // Getters and Setters
+    // ... keep existing getters/setters ...
+      // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,4 +68,12 @@ public class Memory {
 
     public LocalDate getDateCreated() { return dateCreated; }
     public void setDateCreated(LocalDate dateCreated) { this.dateCreated = dateCreated; }
+
+
+    // ✅ Add getters & setters for new fields
+    public String getLinkUrl() { return linkUrl; }
+    public void setLinkUrl(String linkUrl) { this.linkUrl = linkUrl; }
+
+    public String getTextContent() { return textContent; }
+    public void setTextContent(String textContent) { this.textContent = textContent; }
 }
