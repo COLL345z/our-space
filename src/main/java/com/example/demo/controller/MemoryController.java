@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,24 +34,45 @@ public class MemoryController {
         return repository.findAll();
     }
 
+    // ─── Save Memory (with support for all types) ──────────────────
     @PostMapping
     public Memory saveMemory(@RequestBody Memory memory) {
         if (memory.getDateCreated() == null) {
             memory.setDateCreated(LocalDate.now());
         }
+        
+        // Set memory type based on category if not set
+        if (memory.getMemoryType() == null || memory.getMemoryType().isEmpty()) {
+            memory.setMemoryType(memory.getCategory());
+        }
+        
+        // For TEXT type, store content in textContent
+        if ("TEXT".equals(memory.getCategory()) && memory.getTextContent() != null) {
+            memory.setContent(memory.getTextContent());
+        }
+        
+        // For LINK type, store URL in linkUrl and content
+        if ("LINK".equals(memory.getCategory()) && memory.getLinkUrl() != null) {
+            memory.setContent(memory.getLinkUrl());
+        }
+
         Memory saved = repository.save(memory);
         
         // Send notification to partner
-        notificationService.notifyPartner(
-            memory.getUploadedBy(),
-            "New memory added 💛",
-            memory.getTitle() != null ? memory.getTitle() : "Check it out in Our Space"
-        );
+        String title = memory.getTitle() != null ? memory.getTitle() : "New memory added 💛";
+        String message = switch (memory.getCategory()) {
+            case "LINK" -> "Shared a link with you 🔗";
+            case "SCREENSHOT" -> "Shared a screenshot 📱";
+            case "TEXT" -> "Shared a text note 📝";
+            default -> "Check it out in Our Space";
+        };
+        
+        notificationService.notifyPartner(memory.getUploadedBy(), title, message);
         
         return saved;
     }
 
-    // ✅ SUPPORT MULTIPLE FILE UPLOADS TO CLOUDINARY
+    // ─── Upload Multiple Images ─────────────────────────────────────
     @PostMapping("/upload")
     public ResponseEntity<List<String>> uploadImages(@RequestParam("files") MultipartFile[] files) {
         List<String> urls = new ArrayList<>();
@@ -62,7 +82,7 @@ public class MemoryController {
                 Map uploadResult = cloudinary.uploader().upload(
                         file.getBytes(),
                         ObjectUtils.asMap(
-                            "folder", "our-space-memories", // Optional: organize in folder
+                            "folder", "our-space-memories",
                             "resource_type", "auto"
                         )
                 );
@@ -79,21 +99,19 @@ public class MemoryController {
         }
     }
 
+    // ─── Delete Memory ──────────────────────────────────────────────
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
-            // Optional: Delete from Cloudinary as well
             Memory memory = repository.findById(id).orElse(null);
             if (memory != null && memory.getImageUrls() != null) {
                 for (String url : memory.getImageUrls()) {
-                    // Extract public ID from URL and delete from Cloudinary
                     try {
                         String publicId = extractPublicIdFromUrl(url);
                         if (publicId != null) {
                             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
                         }
                     } catch (Exception e) {
-                        // Log error but continue
                         System.err.println("Failed to delete image from Cloudinary: " + e.getMessage());
                     }
                 }
@@ -105,20 +123,23 @@ public class MemoryController {
         }
     }
 
+    // ─── Get by Category ────────────────────────────────────────────
+    @GetMapping("/category/{category}")
+    public List<Memory> getByCategory(@PathVariable String category) {
+        return repository.findByCategory(category);
+    }
+
+    // ─── Helper: Extract Public ID from Cloudinary URL ─────────────
     private String extractPublicIdFromUrl(String url) {
         try {
-            // Extract public ID from Cloudinary URL
-            // Example: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/public_id.jpg
             String[] parts = url.split("/");
             String lastPart = parts[parts.length - 1];
             String publicId = lastPart.substring(0, lastPart.lastIndexOf("."));
             
-            // Check if there's a folder structure
             for (int i = parts.length - 2; i >= 0; i--) {
                 if (parts[i].equals("upload")) {
                     StringBuilder fullId = new StringBuilder();
                     for (int j = i + 1; j < parts.length - 1; j++) {
-                        // Skip version part (v1234567890)
                         if (parts[j].matches("v\\d+")) continue;
                         if (fullId.length() > 0) fullId.append("/");
                         fullId.append(parts[j]);
