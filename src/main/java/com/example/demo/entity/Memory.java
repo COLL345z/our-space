@@ -13,7 +13,7 @@ public class Memory {
     private Long id;
 
     private String title;
-    private String category;
+    private String category;  // "LINK", "SCREENSHOT", "TEXT"
     private String description;
     private String uploadedBy;
 
@@ -24,12 +24,19 @@ public class Memory {
 
     private LocalDate dateCreated;
 
-    // ✅ New fields
-    @Column(length = 2048)  // longer URL possible
-    private String linkUrl;
+    // ✅ Fields for different memory types
+    @Column(length = 2048)
+    private String linkUrl;      // For LINKS tab
 
     @Column(columnDefinition = "TEXT")
-    private String textContent;
+    private String textContent;  // For TEXT tab
+
+    @Column(columnDefinition = "TEXT")
+    private String content;      // General content field
+
+    private String source;       // Where it came from (WhatsApp, TikTok, etc.)
+    private String memoryType;   // "TEXT", "LINK", "SCREENSHOT"
+    private boolean isFavorite = false;
 
     // Constructors
     public Memory() {}
@@ -44,10 +51,11 @@ public class Memory {
         this.linkUrl = linkUrl;
         this.textContent = textContent;
         this.dateCreated = LocalDate.now();
+        this.memoryType = category;
     }
 
-    // ... keep existing getters/setters ...
-      // Getters and Setters
+    // ─── Getters and Setters ──────────────────────────────────────
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -69,11 +77,21 @@ public class Memory {
     public LocalDate getDateCreated() { return dateCreated; }
     public void setDateCreated(LocalDate dateCreated) { this.dateCreated = dateCreated; }
 
-
-    // ✅ Add getters & setters for new fields
     public String getLinkUrl() { return linkUrl; }
     public void setLinkUrl(String linkUrl) { this.linkUrl = linkUrl; }
 
     public String getTextContent() { return textContent; }
     public void setTextContent(String textContent) { this.textContent = textContent; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    public String getMemoryType() { return memoryType; }
+    public void setMemoryType(String memoryType) { this.memoryType = memoryType; }
+
+    public boolean isFavorite() { return isFavorite; }
+    public void setFavorite(boolean favorite) { isFavorite = favorite; }
 }
